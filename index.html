@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="venus">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Republic: Venus Floating City | Res Publica</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+
+    <div class="end-screen" id="endScreen">
+        <div class="end-title" id="endTitle">Game Over</div>
+        <div class="end-reason" id="endReason"></div>
+        <div class="score-board" id="scoreBoard"></div>
+        <button class="btn" data-action="restart" data-args="[]"><span class="btn-icon" data-icon="action.restart"></span><span data-i18n="btn.play_again">Play Again</span></button>
+    </div>
+
+    <div class="end-screen" id="startScreen">
+        <div class="game-title" style="font-size: 3rem;" data-i18n="ui.title">Cloud Republic</div>
+        <p class="game-subtitle" data-i18n="ui.subtitle" style="margin-top: 10px;">Res Publica: Venus Floating City Colonization Project</p>
+        <p style="color: var(--text-secondary); margin: 20px 0 5px;" data-i18n="ui.choose_difficulty">Choose a difficulty to start</p>
+        <p style="color: var(--text-secondary); font-size: 0.85rem;" data-i18n="ui.start_hint">Complete purification and build habitats</p>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 15px;" data-i18n="ui.choose_faction">Choose a faction</p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 10px;">
+            <button class="btn btn-secondary faction-btn" id="factionBtnNone" data-action="selectFaction" data-args="[&quot;none&quot;]"></button>
+            <button class="btn btn-secondary faction-btn" id="factionBtnGuild" data-action="selectFaction" data-args="[&quot;guild&quot;]"></button>
+            <button class="btn btn-secondary faction-btn" id="factionBtnCovenant" data-action="selectFaction" data-args="[&quot;covenant&quot;]"></button>
+            <button class="btn btn-secondary faction-btn" id="factionBtnTechnocracy" data-action="selectFaction" data-args="[&quot;technocracy&quot;]"></button>
+        </div>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-top: 25px;">
+            <button class="btn btn-success diff-btn" id="diffEasy" data-action="startGame" data-args="[&quot;easy&quot;]"></button>
+            <button class="btn diff-btn" id="diffMedium" data-action="startGame" data-args="[&quot;medium&quot;]"></button>
+            <button class="btn btn-danger diff-btn" id="diffHard" data-action="startGame" data-args="[&quot;hard&quot;]"></button>
+            <button class="btn btn-secondary diff-btn" id="diffSandbox" data-action="toggleSandboxPanel" data-args="[]"></button>
+        </div>
+        <div class="sandbox-panel" id="sandboxPanel" style="display: none;">
+            <div class="sandbox-title"><span class="pt-icon" data-icon="panel.sandbox"></span> <span data-i18n="sandbox.title">Sandbox Rule Setup</span></div>
+            <div class="sandbox-row">
+                <span class="sandbox-label" data-i18n="sandbox.max_turns">Turn Limit</span>
+                <span class="sandbox-stepper">
+                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;maxTurns&quot;,-1]">-</button>
+                    <span class="sandbox-value" id="sandboxValMaxTurns"></span>
+                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;maxTurns&quot;,1]">+</button>
+                </span>
+            </div>
+            <div class="sandbox-row">
+                <span class="sandbox-label" data-i18n="sandbox.corrosion_rate">Corrosion Rate</span>
+                <span class="sandbox-stepper">
+                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;corrosionRate&quot;,-1]">-</button>
+                    <span class="sandbox-value" id="sandboxValCorrosionRate"></span>
+                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;corrosionRate&quot;,1]">+</button>
+                </span>
+            </div>
+            <div class="sandbox-row">
+                <span class="sandbox-label" data-i18n="sandbox.energy_maintenance">Energy Upkeep</span>
+                <span class="sandbox-stepper">
+                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;energyMaintenance&quot;,-1]">-</button>
+                    <span class="sandbox-value" id="sandboxValEnergyMaintenance"></span>
+                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;energyMaintenance&quot;,1]">+</button>
+                </span>
+            </div>
+            <div class="sandbox-row">
+                <span class="sandbox-label" data-i18n="sandbox.draw_per_turn">Draw per Turn</span>
+                <span class="sandbox-stepper">
+                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;drawPerTurn&quot;,-1]">-</button>
+                    <span class="sandbox-value" id="sandboxValDrawPerTurn"></span>
+                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;drawPerTurn&quot;,1]">+</button>
+                </span>
+            </div>
+            <div class="sandbox-row">
+                <span class="sandbox-label" data-i18n="sandbox.initial_hand_size">Starting Hand</span>
+                <span class="sandbox-stepper">
+                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;initialHandSize&quot;,-1]">-</button>
+                    <span class="sandbox-value" id="sandboxValInitialHandSize"></span>
+                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;initialHandSize&quot;,1]">+</button>
+                </span>
+            </div>
+            <div class="sandbox-row">
+                <span class="sandbox-label" data-i18n="sandbox.preset_label">Starting Resources</span>
+                <span class="sandbox-stepper">
+                    <button class="btn btn-secondary sandbox-preset-btn" id="sandboxPresetPoor" data-action="setSandboxPreset" data-args="[&quot;poor&quot;]"></button>
+                    <button class="btn btn-secondary sandbox-preset-btn" id="sandboxPresetStandard" data-action="setSandboxPreset" data-args="[&quot;standard&quot;]"></button>
+                    <button class="btn btn-secondary sandbox-preset-btn" id="sandboxPresetRich" data-action="setSandboxPreset" data-args="[&quot;rich&quot;]"></button>
+                </span>
+            </div>
+            <button class="btn btn-success sandbox-start" id="sandboxStartBtn" data-action="startSandbox" data-args="[]"><span data-i18n="sandbox.start">Start Sandbox</span></button>
+        </div>
+        <div class="theme-row">
+            <span style="font-size: 0.8rem; color: var(--text-secondary);" data-i18n="ui.theme_label">Theme</span>
+            <button class="btn btn-secondary theme-btn" id="themeBtnVenus" data-action="setTheme" data-args="[&quot;venus&quot;]"></button>
+            <button class="btn btn-secondary theme-btn" id="themeBtnGlacier" data-action="setTheme" data-args="[&quot;glacier&quot;]"></button>
+            <button class="btn btn-secondary theme-btn" id="themeBtnAbyss" data-action="setTheme" data-args="[&quot;abyss&quot;]"></button>
+            <button class="btn btn-secondary theme-btn" id="animToggleStart" data-action="toggleAnim" data-args="[]"></button>
+        </div>
+        <div class="stats-panel" id="statsPanel"></div>
+        <div style="margin-top: 18px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-secondary" id="legacyBtn" data-action="openMetaScreen" data-args="[]"><span class="btn-icon" data-icon="mat.driving"></span><span id="legacyBtnText"></span></button>
+            <button class="btn btn-secondary" id="deckBtn" data-action="openDeckScreen" data-args="[]"><span class="btn-icon" data-icon="panel.deck"></span><span id="deckBtnText"></span></button>
+        </div>
+    </div>
+
+    <div class="end-screen" id="deckScreen"></div> <!-- M4: deck builder, lazily rendered on open -->
+
+    <div class="end-screen" id="techScreen"></div> <!-- M5: tech tree, lazily rendered on open -->
+
+    <div class="end-screen" id="metaScreen">
+        <div class="game-title" style="font-size: 2rem;" data-i18n="meta.title">Legacy</div>
+        <div class="meta-balance" id="metaBalance"></div>
+        <div class="meta-grid" id="metaPerkGrid"></div>
+        <button class="btn" style="margin-top: 20px;" data-action="closeMetaScreen" data-args="[]"><span data-i18n="meta.close">Close</span></button>
+    </div>
+
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal-content">
+            <div class="modal-title"><span class="modal-icon" id="modalIcon"></span><span id="modalTitle">Environmental Event</span></div>
+            <div class="modal-text" id="modalText"></div>
+            <button class="btn" id="modalBtn" data-action="closeEventModal" data-args="[]">Proceed</button>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <header class="game-header">
+            <div class="header-controls">
+                <button class="btn btn-secondary" id="techBtn" data-action="openTechScreen" data-args="[]"><span class="btn-icon" data-icon="panel.tech"></span><span id="techBtnText">0/9</span></button>
+                <button class="btn btn-secondary" id="themeCycleBtn" data-action="cycleTheme" data-args="[]"></button>
+                <button class="btn btn-secondary" id="animToggleBtn" data-action="toggleAnim" data-args="[]"></button>
+                <button class="btn btn-secondary" id="langBtn" data-action="toggleLang" data-args="[]">EN</button>
+            </div>
+            <h1 class="game-title" data-i18n="ui.title">Cloud Republic</h1>
+            <p class="game-subtitle" data-i18n="ui.subtitle">Res Publica: Venus Floating City Colonization Project</p>
+            <div class="faction-badge" id="factionBadge" style="display: none;"></div>
+        </header>
+
+        <div class="game-main">
+            <div class="left-panel">
+                <div class="panel">
+                    <div class="panel-title">
+                        <span class="pt-icon" data-icon="panel.player"></span> <span data-i18n="ui.player_status">Player Status</span>
+                    </div>
+                    <div class="player-info">
+                        <div class="player-avatar">P1</div>
+                        <div class="player-details">
+                            <h4 data-i18n="ui.faction">Player Faction</h4>
+                            <span data-i18n="ui.habitat_alpha">Floating Habitat Alpha</span>
+                        </div>
+                    </div>
+                    <div class="resource-grid" id="resourcePanel">
+                        <div class="resource-item" id="res-money">
+                            <div class="resource-label"><span class="rl-icon" data-icon="res.money"></span><span data-i18n="res.money">Funds</span></div>
+                            <div class="resource-value">65</div>
+                            <div class="resource-bar">
+                                <div class="resource-bar-fill" style="width: 65%; background: var(--accent-gold)"></div>
+                            </div>
+                        </div>
+                        <div class="resource-item" id="res-materials">
+                            <div class="resource-label"><span class="rl-icon" data-icon="res.materials"></span><span data-i18n="res.materials">Materials</span></div>
+                            <div class="resource-value">75</div>
+                            <div class="resource-bar">
+                                <div class="resource-bar-fill" style="width: 75%; background: var(--accent-purple)"></div>
+                            </div>
+                        </div>
+                        <div class="resource-item" id="res-energy">
+                            <div class="resource-label"><span class="rl-icon" data-icon="res.energy"></span><span data-i18n="res.energy">Energy</span></div>
+                            <div class="resource-value">25</div>
+                            <div class="resource-bar">
+                                <div class="resource-bar-fill" style="width: 25%; background: var(--accent-cyan)"></div>
+                            </div>
+                        </div>
+                        <div class="resource-item" id="res-research">
+                            <div class="resource-label"><span class="rl-icon" data-icon="res.research"></span><span data-i18n="res.research">Research</span></div>
+                            <div class="resource-value">8</div>
+                            <div class="resource-bar">
+                                <div class="resource-bar-fill" style="width: 8%; background: var(--accent-purple)"></div>
+                            </div>
+                        </div>
+                        <div class="resource-item" id="res-morale">
+                            <div class="resource-label"><span class="rl-icon" data-icon="res.morale"></span><span data-i18n="res.morale">Morale</span></div>
+                            <div class="resource-value">70</div>
+                            <div class="resource-bar">
+                                <div class="resource-bar-fill" style="width: 70%; background: var(--accent-green)"></div>
+                            </div>
+                        </div>
+                        <div class="resource-item" id="res-integrity">
+                            <div class="resource-label"><span class="rl-icon" data-icon="res.integrity"></span><span data-i18n="res.integrity">Integrity</span></div>
+                            <div class="resource-value">100%</div>
+                            <div class="resource-bar">
+                                <div class="resource-bar-fill" style="width: 100%; background: var(--neutral-3)"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top: 20px;">
+                    <div class="panel-title">
+                        <span class="pt-icon" data-icon="panel.permanent"></span> <span data-i18n="ui.permanent_effects">Permanent Effects</span>
+                    </div>
+                    <div id="permanentCards" style="font-size: 0.85rem; color: var(--text-secondary);">
+                        No permanent cards yet
+                    </div>
+                </div>
+            </div>
+
+            <div class="center-area">
+                <div class="turn-info">
+                    <div>
+                        <div class="turn-phase" id="currentPhase">Setup Phase</div>
+                        <div class="phase-indicator" id="phaseIndicator">
+                            <div class="phase-dot" id="dot-event"></div>
+                            <div class="phase-dot" id="dot-action"></div>
+                            <div class="phase-dot" id="dot-settlement"></div>
+                        </div>
+                        <div class="turn-number"><span id="turnText">Turn 0 / 22</span></div>
+                        <div class="turn-number" style="margin-top: 4px;"><span id="difficultyText"></span></div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);" data-i18n="ui.cards_selected">Cards Selected</div>
+                        <div style="font-size: 1.5rem; color: var(--accent-gold);" id="selectedCount">0/3</div>
+                    </div>
+                </div>
+
+                <div class="panel public-track">
+                    <div class="panel-title">
+                        <span class="pt-icon" data-icon="panel.globe"></span> <span data-i18n="ui.global_progress">Global Progress</span>
+                    </div>
+                    <div class="track-item">
+                        <div class="track-header">
+                            <span class="th-label"><span class="th-icon th-pur" data-icon="cat.environment"></span><span data-i18n="ui.purification_label">Sulfuric Acid Cloud Purification</span></span>
+                            <span id="purificationText">0%</span>
+                        </div>
+                        <div class="track-bar-bg">
+                            <div class="track-bar-fill purification-fill" id="purificationBar" style="width: 0%">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="track-item">
+                        <div class="track-header">
+                            <span class="th-label"><span class="th-icon th-hab" data-icon="action.build"></span><span data-i18n="ui.habitat_count">Habitat Count</span></span>
+                            <span id="habitatText">1 / 6</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel card-area" style="position: relative;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div class="panel-title" style="margin: 0;">
+                            <span class="pt-icon" data-icon="panel.hand"></span> <span data-i18n="ui.hand">Hand</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);" id="handHint">
+                            Click to select cards to play (max 3 per turn)
+                        </div>
+                    </div>
+                    <div class="pile-info" id="pileInfo"></div> <!-- M4: draw/discard pile counts -->
+                    <div class="card-grid" id="handCards">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn" id="playBtn" data-action="playSelectedCards" data-args="[]" disabled><span class="btn-icon" data-icon="action.play"></span><span data-i18n="btn.play">Play Selected Cards</span></button>
+                        <button class="btn btn-secondary" id="repairBtn" data-action="repairHabitat" data-args="[]"><span class="btn-icon" data-icon="action.repair"></span><span data-i18n="btn.repair">Repair (-2 Materials +1%)</span></button>
+                        <button class="btn btn-secondary" id="buildHabitatBtn" data-action="buildHabitat" data-args="[]"><span class="btn-icon" data-icon="action.build"></span><span data-i18n="btn.build">Build Habitat (-20 Funds -12 Materials)</span></button>
+                    </div>
+                    <div class="phase-actions" id="actionPhaseControls">
+                        <button class="btn btn-success" id="endTurnBtn" data-action="endTurn" data-args="[]"><span class="btn-icon" data-icon="action.turn"></span><span data-i18n="btn.next_turn">Next Turn</span></button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">
+                        <span class="pt-icon" data-icon="panel.log"></span> <span data-i18n="ui.event_log">Event Log</span>
+                    </div>
+                    <div class="log-panel" id="gameLog">
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="panel">
+                    <div class="panel-title">
+                        <span class="pt-icon" data-icon="panel.threat"></span> <span data-i18n="ui.threats">Environmental Threats</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <div class="track-header" style="margin-bottom: 8px;">
+                            <span class="th-label"><span class="th-icon th-cor" data-icon="panel.threat"></span><span data-i18n="ui.corrosion_label">Sulfuric Acid Corrosion Rate</span></span>
+                            <span style="color: var(--accent-rose);" id="corrosionRateText">-2%/turn</span>
+                        </div>
+                        <div class="track-bar-bg">
+                            <div class="track-bar-fill corrosion-fill" id="corrosionBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="rules-list">
+                        <p data-i18n="rules.integrity_decay">&#8226; Structural Integrity decreases per turn</p>
+                        <p data-i18n="rules.crash">&#8226; Reaches 0 = Habitat Crash</p>
+                        <p data-i18n="rules.repair">&#8226; Repair: 2 Materials = 1%</p>
+                        <p data-i18n="rules.strike">&#8226; Morale &lt; 30: Workers Strike</p>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top: 20px;">
+                    <div class="panel-title">
+                        <span class="pt-icon" data-icon="panel.rules"></span> <span data-i18n="rules.title">Game Rules</span>
+                    </div>
+                    <div class="rules-block">
+                        <p><strong data-i18n="rules.defeat_label">Collective Defeat:</strong> <span data-i18n="rules.defeat">Turns end with purification &lt;100% or all habitats crashed</span></p>
+                        <p><strong data-i18n="rules.victory_label">Collective Victory:</strong> <span data-i18n="rules.victory">Purification 100% + Habitats &gt;=6</span></p>
+                        <p><strong data-i18n="rules.personal_label">Personal Victory:</strong> <span data-i18n="rules.personal">Highest contribution score after collective victory</span></p>
+                        <br>
+                        <p data-i18n="rules.maturity_header">Maturity Cost Multipliers:</p>
+                        <p data-i18n="rules.maturity_1">&#9733; Driving x0.6 | &#9654; Trending x0.8</p>
+                        <p data-i18n="rules.maturity_2">&#9650; Emerging x1.0 | &#9680; Signaling x1.3</p>
+                        <p data-i18n="rules.maturity_3">&#9729; Brewing x1.5 (Requires Research &gt;=10)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/data.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/icons.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/progression.js"></script>
+    <script src="js/meta-ui.js"></script>
+    <script src="js/sandbox-ui.js"></script>
+    <script src="js/deck-ui.js"></script>
+    <script src="js/tech-ui.js"></script>
+    <script src="js/ui.js"></script>
+</body>
+</html>
