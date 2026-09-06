@@ -59,6 +59,8 @@ cloud-republic/
 │   ├── deck-ui.js  # 构筑界面与牌库编辑
 │   ├── tech-ui.js  # 局内科技树界面
 │   └── ui.js       # 组装功能模块、对局渲染、弹窗与回合流
+├── assets/
+│   └── images/     # 设计参考图（des.jpg / swis.jpg）
 ├── test/
 │   ├── simulate.js # Node 无依赖规则测试与胜率模拟
 │   └── architecture.js # 模块集成与存储兼容测试
