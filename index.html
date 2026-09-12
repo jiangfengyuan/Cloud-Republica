@@ -34,6 +34,7 @@
             <button class="btn btn-danger diff-btn" id="diffHard" data-action="startGame" data-args="[&quot;hard&quot;]"></button>
             <button class="btn btn-secondary diff-btn" id="diffSandbox" data-action="toggleSandboxPanel" data-args="[]"></button>
         </div>
+        <button class="btn btn-secondary" id="resumeGameBtn" style="display: none; margin-top: 12px;" data-action="resumeGame" data-args="[]" data-i18n="btn.resume_game">Resume saved game</button>
         <div class="sandbox-panel" id="sandboxPanel" style="display: none;">
             <div class="sandbox-title"><span class="pt-icon" data-icon="panel.sandbox"></span> <span data-i18n="sandbox.title">Sandbox Rule Setup</span></div>
             <div class="sandbox-row">
@@ -318,6 +319,7 @@
     <script src="js/icons.js"></script>
     <script src="js/state.js"></script>
     <script src="js/engine.js"></script>
+    <script src="js/game-session.js"></script>
     <script src="js/progression.js"></script>
     <script src="js/meta-ui.js"></script>
     <script src="js/sandbox-ui.js"></script>

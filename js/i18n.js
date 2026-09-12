@@ -31,6 +31,7 @@
       'stats.best_purification': '最高净化',
       'stats.new_record': '新纪录！',
       'stats.no_games': '暂无战绩 — 开始你的第一局',
+      'btn.resume_game': '继续已保存的对局',
 
       // ---------- factions & meta (M2) ----------
       'ui.choose_faction': '选择派系（修正器 + 实质代价）',
@@ -486,6 +487,7 @@
       'btn.next_turn': 'Next Turn',
       'btn.begin_turn': 'Begin Turn {turn}',
       'btn.play_again': 'Play Again',
+      'btn.resume_game': 'Resume saved game',
       'modal.proceed': 'Proceed to Action Phase',
       'modal.apply_event': 'Apply Event & Proceed',
       'modal.event_title': 'Environmental Event: {name}',

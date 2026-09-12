@@ -7,6 +7,7 @@
   const icon = name => CR.icons.get(name);
 
   let state = null;
+  const gameSession = CR.gameSession.create();
   let modalMode = null;        // null | 'event' | 'settlement'
   let modalContext = null;     // { event } for event mode (re-render on language switch)
   let lastHandSig = null;
@@ -15,7 +16,8 @@
   let selectedFaction = 'none'; // start-screen faction pick (cr_faction)
 
   const actions = Object.create(null);
-  const deps = { actions, t, icon, engine, cardName, addLog, updateUI, updateFactionButtons, getState: () => state };
+  const deps = { actions, t, icon, engine, cardName, addLog, updateUI, updateFactionButtons,
+    dispatchGame, getState: () => state };
   const metaUI = CR.features['meta-ui'](deps);
   const deckUI = CR.features['deck-ui'](deps);
   const sandboxUI = CR.features['sandbox-ui'](deps);
@@ -235,25 +237,11 @@
   }
 
   function toggleCardSelection(index) {
-    if (state.phase !== 'action') return;
-    if (state.strike) {
-      addLog(t('fail.strike_cards'), 'bad');
+    const result = dispatchGame('selectCard', { index });
+    if (!result.ok) {
+      if (result.reason === 'fail.no_selection') return; // unaffordable cards are not selectable
+      addLog(t(result.reason, result.reasonParams), result.reason === 'ui.max_selected' ? 'warn' : 'bad');
       return;
-    }
-
-    const card = state.hand[index];
-    if (!engine.canAfford(state, card)) return;
-
-    const pos = state.selectedCards.indexOf(index);
-    if (pos > -1) {
-      state.selectedCards.splice(pos, 1);
-    } else {
-      const remaining = engine.getRemainingCardPlays(state);
-      if (state.selectedCards.length >= remaining) {
-        addLog(t('ui.log.max_selected', { max: remaining }), 'warn');
-        return;
-      }
-      state.selectedCards.push(index);
     }
 
     updateSelectionClasses(); // no full rebuild (dirty-signature performance optimization)
@@ -544,15 +532,19 @@
 
   // ==================== TURN FLOW (civ-style: fully player-driven) ====================
 
-  function startTurnFlow() {
-    engine.startNewTurn(state);
-    if (state.gameOver) { showEndScreen(); return; }
+  function dispatchGame(command, payload) {
+    const result = gameSession.dispatch(command, payload);
+    state = gameSession.getState();
+    return result;
+  }
 
+  function syncGamePresentation(result) {
+    if (!state) return;
     updateUI();
     updatePhaseIndicator();
-
-    const event = engine.triggerEventPhase(state);
-    openModal('event', { event }); // null event => neutralized modal
+    renderFactionBadge();
+    if (state.gameOver) { showEndScreen(); return; }
+    if (result && result.modal) openModal(result.modal.mode, result.modal);
   }
 
   // ==================== ACTION HANDLERS ====================
@@ -562,7 +554,8 @@
       document.getElementById('eventModal').classList.remove('active');
       modalMode = null;
 
-      engine.applyEvent(state);
+      const result = dispatchGame('acknowledgeEvent');
+      if (!result.ok) return;
       updateUI();
       updatePhaseIndicator();
 
@@ -576,14 +569,14 @@
     } else if (modalMode === 'settlement') {
       document.getElementById('eventModal').classList.remove('active');
       modalMode = null;
-      startTurnFlow();
+      syncGamePresentation(dispatchGame('beginNextTurn'));
     }
   };
 
   actions.playSelectedCards = function () {
     // pre-validate so the fly-out animation only runs on a real play
     if (!state || state.phase !== 'action' || state.strike || state.selectedCards.length === 0) {
-      const result = engine.playSelectedCards(state);
+      const result = dispatchGame('playSelectedCards');
       if (!result.ok) addLog(t(result.reason, result.reasonParams), 'bad');
       return;
     }
@@ -595,7 +588,7 @@
     });
 
     const run = () => {
-      const result = engine.playSelectedCards(state);
+      const result = dispatchGame('playSelectedCards');
       if (!result.ok) {
         addLog(t(result.reason, result.reasonParams), 'bad');
         updateUI();
@@ -611,13 +604,13 @@
   };
 
   actions.repairHabitat = function () {
-    const result = engine.repairHabitat(state);
+    const result = dispatchGame('repairHabitat');
     if (!result.ok) addLog(t(result.reason, result.reasonParams), 'bad');
     updateUI();
   };
 
   actions.buildHabitat = function () {
-    const result = engine.buildHabitat(state);
+    const result = dispatchGame('buildHabitat');
     if (!result.ok) addLog(t(result.reason, result.reasonParams), 'bad');
     updateUI();
     if (state.gameOver) showEndScreen();
@@ -626,7 +619,8 @@
   actions.endTurn = function () { // the "Next Turn" button
     if (!state || state.phase !== 'action') return;
 
-    engine.endTurn(state);
+    const result = dispatchGame('endTurn');
+    if (!result.ok) { addLog(t(result.reason, result.reasonParams), 'bad'); return; }
     updateUI();
     updatePhaseIndicator();
 
@@ -637,12 +631,12 @@
   actions.startGame = function (difficultyKey) {
     document.getElementById('startScreen').classList.remove('active');
 
-    state = CR.state.createInitialState(difficultyKey, selectedFaction, metaUI.getMeta().perks,
-      difficultyKey === 'sandbox' ? sandboxUI.getConfig() : undefined, deckUI.getConfig());
+    const result = gameSession.start({ difficulty: difficultyKey, faction: selectedFaction, metaPerks: metaUI.getMeta().perks,
+      sandboxConfig: difficultyKey === 'sandbox' ? sandboxUI.getConfig() : undefined, deckConfig: deckUI.getConfig() });
+    state = result.state;
     lastHandSig = null;
     prevResources = null;
     prevPermCount = 0;
-    engine.drawInitialCards(state);
     updateUI();
     updatePhaseIndicator();
     renderFactionBadge();
@@ -652,7 +646,18 @@
     addLog(t('ui.log.goal', { turns: state.maxTurns }));
     addLog(t('ui.log.init_corrosion', { rate: state.corrosionRate }));
 
-    startTurnFlow();
+    openModal(result.modal.mode, result.modal);
+  };
+
+  actions.resumeGame = function () {
+    const result = gameSession.restore();
+    if (!result.ok) return;
+    state = result.state;
+    lastHandSig = null;
+    prevResources = null;
+    prevPermCount = state.permanentCards.length;
+    document.getElementById('startScreen').classList.remove('active');
+    syncGamePresentation(result);
   };
 
   // ==================== FACTION & META UI ====================
@@ -755,6 +760,7 @@
     });
     createStars();
     refreshTexts();
+    document.getElementById('resumeGameBtn').style.display = gameSession.hasSavedGame() ? '' : 'none';
     document.getElementById('startScreen').classList.add('active');
   }
 

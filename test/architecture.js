@@ -132,3 +132,23 @@ CR.engine.applyResourceEffect(state, { purification: 1 });
 unsub2();
 assert.equal(first, 1); assert.equal(second, 2); assert.equal(legacy, 2);
 console.log('PASS event fan-out, unsubscribe and onLog compatibility');
+
+// M6: command boundary owns mutation and snapshots include the serializable RNG.
+const firstSession = CR.gameSession.create();
+firstSession.start({ difficulty: 'medium', faction: 'none', seed: 20260911 });
+assert.equal(firstSession.getState().phase, 'event');
+assert(firstSession.dispatch('acknowledgeEvent').ok);
+assert(firstSession.dispatch('endTurn').ok);
+assert.equal(firstSession.getState().phase, 'settlement');
+const restoredSession = CR.gameSession.create();
+assert(restoredSession.hasSavedGame());
+assert(restoredSession.restore().ok);
+assert.equal(restoredSession.getState().phase, 'settlement');
+const nextA = firstSession.dispatch('beginNextTurn');
+const nextB = restoredSession.dispatch('beginNextTurn');
+assert.equal(nextA.state.pendingEvent && nextA.state.pendingEvent.id, nextB.state.pendingEvent && nextB.state.pendingEvent.id);
+assert.equal(nextA.state.rngState, nextB.state.rngState);
+assert.equal(restoredSession.getHistory().at(-1).command, 'beginNextTurn');
+CR.storage.setItem('cr_active_game', JSON.stringify({ v: 1, state: { phase: 'action' }, history: [] }));
+assert.equal(CR.gameSession.create().restore().ok, false);
+console.log('PASS command session, versioned save/restore and deterministic continuation');

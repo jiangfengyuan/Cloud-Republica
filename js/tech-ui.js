@@ -4,7 +4,7 @@
   CR.features = CR.features || {};
   CR.features['tech-ui'] = function (deps) {
     const { actions, t, icon } = deps;
-    const { engine, addLog, updateUI } = deps;
+    const { engine, addLog, updateUI, dispatchGame } = deps;
   // ==================== TECH TREE (M5) ====================
 
   // Node status drives both the color/icon semantics and the buy-button state:
@@ -66,7 +66,7 @@
 
   actions.buyTech = function (id) {
     if (!deps.getState()) return;
-    const result = engine.unlockTech(deps.getState(), id);
+    const result = dispatchGame('unlockTech', { nodeId: id });
     if (!result.ok) addLog(t(result.reason), 'bad');
     updateUI(); // research balance and hand playability may have changed
     renderTechScreen();

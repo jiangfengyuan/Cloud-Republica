@@ -42,6 +42,16 @@
     Array.from(subscribers).forEach(listener => listener(event));
   }
 
+  // A game session may carry a serializable PRNG state. Standalone engine users
+  // retain the injectable engine.rng hook used by simulations and unit tests.
+  function random(state) {
+    if (state && Number.isInteger(state.rngState)) {
+      state.rngState = (Math.imul(1664525, state.rngState >>> 0) + 1013904223) >>> 0;
+      return state.rngState / 4294967296;
+    }
+    return engine.rng();
+  }
+
   // ==================== RESOURCE MANAGEMENT ====================
 
   function modifyResource(state, type, amount) {
@@ -161,7 +171,7 @@
       state.drawPile = state.discardPile;
       state.discardPile = [];
       for (let i = state.drawPile.length - 1; i > 0; i--) {
-        const j = Math.floor(engine.rng() * (i + 1));
+        const j = Math.floor(random(state) * (i + 1));
         const tmp = state.drawPile[i]; state.drawPile[i] = state.drawPile[j]; state.drawPile[j] = tmp;
       }
     }
@@ -275,7 +285,7 @@
 
     if (card.risk) {
       // Card 8 Rare Metal Futures: 40% chance the deal fails, -10 Funds instead of +10 (spec 3.6)
-      if (engine.rng() < 0.4) {
+      if (random(state) < 0.4) {
         modifyResource(state, 'money', -10);
         log('log.risk_failed', { card: card.name, cardId: card.id });
       } else {
@@ -408,7 +418,7 @@
       return null;
     }
 
-    const roll = Math.floor(engine.rng() * 20) + 1;
+    const roll = Math.floor(random(state) * 20) + 1;
     const event = CR.data.EVENTS.find(e => e.id === roll) || CR.data.EVENTS[0];
 
     // Card 53 Space Radiation Medicine: Solar Storm (event id 2) fully neutralized (spec 3.6)
@@ -627,6 +637,7 @@
   engine.buildHabitat = buildHabitat;
   engine.endTurn = endTurn;
   engine.unlockTech = unlockTech;
+  engine.random = random;
 
   CR.engine = engine;
   if (typeof module !== 'undefined' && module.exports) module.exports = engine;

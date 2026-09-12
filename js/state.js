@@ -37,7 +37,7 @@
 
   // Baseline path (faction 'none' / missing, no meta perks) expands to the exact
   // pre-M2 values: every new modifier defaults to its identity value (x1 / +0).
-  function createInitialState(difficultyKey, factionId, metaPerks, sandboxConfig, deckConfig) {
+  function createInitialState(difficultyKey, factionId, metaPerks, sandboxConfig, deckConfig, rng) {
     const levels = CR.data.DIFFICULTY_LEVELS;
     const key = (difficultyKey && levels[difficultyKey]) ? difficultyKey : 'medium';
     const diff = levels[key];
@@ -112,7 +112,7 @@
     // deck" — only when the deck actually contains the card (that copy leaves the
     // draw pile, so it can never be drawn a second time beyond deck contents).
     const deck = buildDeckList(deckConfig);
-    const deckRng = (CR.engine && CR.engine.rng) || Math.random;
+    const deckRng = rng || (CR.engine && CR.engine.rng) || Math.random;
     const drawPile = shuffleIds(deck.list, deckRng);
     const openingHand = [];
     guaranteed.forEach(id => {
