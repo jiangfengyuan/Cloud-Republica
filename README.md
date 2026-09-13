@@ -1,71 +1,66 @@
 # Cloud Republic: Venus Floating City
 
-单人卡牌策略游戏：在限定回合内完成金星硫酸云净化（100%）并建成 ≥6 个栖息地。
-纯原生 HTML/CSS/JS——无构建工具、无依赖、无 ES module，**双击 `index.html` 即玩**。
+[![CI](https://github.com/jiangfengyuan/Cloud-Republica/actions/workflows/ci.yml/badge.svg)](https://github.com/jiangfengyuan/Cloud-Republica/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-已包含：66 张卡牌、20 个环境事件、三档难度与沙盒、自定义牌库、阵营、局外传承、9 节点科技树、中英双语和三套主题。进行中的对局会自动保存；刷新后可从开始界面继续。
-`RES-REPBLIC.html` 是已归档的历史原型，维护与测试均以 `index.html` 为准。
+A browser-based, single-player card strategy game about establishing a floating city in Venus's sulfuric-acid clouds. Make the air breathable, protect the platform, and build at least six habitats before time runs out.
 
-## 玩法
+**[Play online](https://jiangfengyuan.github.io/Cloud-Republica/)** · **[Read the Chinese introduction](#中文介绍)** · **[Contributing](CONTRIBUTING.md)**
 
-1. 打开 `index.html`，在开始界面选择难度：**简单 / 中等 / 困难**。
-2. 每回合流程（完全由玩家驱动，无自动计时）：
-   - 掷环境事件 → 弹窗展示 → 点击关闭进入行动阶段；
-   - 行动阶段可任意顺序、任意组合地：**打出卡牌**（每回合最多 3 张）、**修理**（材料换完整度）、**建造栖息地**（20 资金 + 12 材料，与扩容卡共享 5 次上限）；
-   - 点「下一回合」进入结算（永久产出、维护、腐蚀、士气、抽牌）→ 结算摘要 → 点「开始回合 N+1」。
-3. 胜负：回合耗尽时净化 ≥100% 且栖息地 ≥6 即集体胜利；完整度归 0 则坠毁（保险/意识上传可一次性挽回）。
+> **Licence and assets.** The source code and original game content in this repository are available under the [MIT License](LICENSE), copyright © 2026 Hayden Jiang. Every image committed to this repository must have a documented, redistributable licence. Third-party design-reference images were audited and removed before publication; the screenshots below are rendered directly by this project.
 
-## 难度
+## Screenshots
 
-| 难度 | 回合 | 腐蚀/回合 | 维护费 | 起始资源 | 模拟胜率（贪心 bot，500 局） |
-|---|---|---|---|---|---|
-| 简单 | 24 | -1.5% | -4 能源 | 充裕 | ~67% |
-| 中等 | 22 | -2% | -4 能源 | 标准 | ~40% |
-| 困难 | 19 | -2.5% | -5 能源 | 紧张 | ~16% |
+| Start screen | Action board |
+| --- | --- |
+| ![Cloud Republic start screen](docs/images/start-screen.png) | ![Cloud Republic action board](docs/images/action-board.png) |
 
-三档开局手牌均包含「痕量气体检测」（净化引擎卡），难度差异由经济参数承载（配置见 `js/data.js` 的 `DIFFICULTY_LEVELS`）。
+| Environmental event |
+| --- |
+| ![Cloud Republic environmental event](docs/images/event-modal.png) |
 
-## 中英文切换
+## Features
 
-header 右上角「中文 / EN」按钮即时切换全界面语言（界面、卡牌、事件、日志、规则、结局），
-选择持久化在 `localStorage`，默认中文。
+- 66 cards, 20 environmental events, three difficulties, and a sandbox mode.
+- Deck building, factions, meta-progression, and a nine-node technology tree.
+- Chinese and English UI, three visual themes, deterministic replay support, and versioned local saves.
+- Works offline: open `index.html` directly, or build a portable `dist/index.html` release.
 
-## 运行测试
+## Play
+
+Choose Easy, Medium, or Hard on the start screen. Every turn, reveal an environmental event, then freely play up to three cards, repair the platform, build habitats, and advance to settlement. Win by reaching 100% purification and at least six habitats before the final turn; integrity reaching zero causes a crash.
+
+| Difficulty | Turns | Corrosion / turn | Maintenance | Greedy-bot win rate (500 runs) |
+| --- | ---: | ---: | ---: | ---: |
+| Easy | 25 | -1.5% | -4 energy | ~86% |
+| Medium | 23 | -2% | -4 energy | ~64% |
+| Hard | 20 | -2.5% | -5 energy | ~33% |
+
+## Development
 
 ```bash
-node test/simulate.js
-node test/architecture.js
+npm install
+npm run check
 ```
 
-`simulate.js`：164 条规则断言，涵盖卡牌、回合、阵营、沙盒、构筑、科技树、翻译和确定性胜率模拟。
-`architecture.js`：使用轻量 DOM 替身验证脚本加载、功能模块、按钮分发、出牌、科技购买、语言切换、回合弹窗、单局存档恢复与确定性续局、旧存档兼容和事件订阅；不替代真实浏览器交互与布局测试。
+`npm run check` runs TypeScript checks, legacy-regression baselines, domain and migration tests, and the offline build. Run `npm run test:e2e` for browser visual baselines (install Playwright Chromium first, if needed).
 
-## 目录结构
+The current release is intentionally dual-track: `js/` remains the production browser implementation, while `src/` is a TypeScript domain core that will take over only after behaviour-parity checks pass. See [architecture notes](docs/architecture.md), the [baseline](docs/refactor/baseline.md), and the [migration roadmap](docs/refactor/roadmap.md).
 
-```
-cloud-republic/
-├── index.html      # 结构标记（开始界面 / 游戏主界面 / 弹窗 / 结局）
-├── styles.css      # 全部样式
-├── js/
-│   ├── data.js     # 卡牌库、事件表、难度配置、中文翻译（纯数据）
-│   ├── storage.js  # 本地读写、版本迁移与配置校验；不可用时退回内存
-│   ├── i18n.js     # 双语字典 + t() + setLang()
-│   ├── icons.js    # SVG 图标与卡牌插图
-│   ├── state.js    # createInitialState(difficultyKey)
-│   ├── engine.js   # 纯逻辑：回合/资源/卡牌/胜负（不碰 DOM，日志为 key+params）
-│   ├── game-session.js # 命令控制器、版本化单局存档与可恢复随机数状态
-│   ├── progression.js # 局外传承奖励规则（不依赖 UI）
-│   ├── meta-ui.js  # 传承购买与对局统计
-│   ├── sandbox-ui.js # 沙盒参数界面
-│   ├── deck-ui.js  # 构筑界面与牌库编辑
-│   ├── tech-ui.js  # 局内科技树界面
-│   └── ui.js       # 组装功能模块、对局渲染、弹窗与回合流
-├── assets/
-│   └── images/     # 设计参考图（des.jpg / swis.jpg）
-├── test/
-│   ├── simulate.js # Node 无依赖规则测试与胜率模拟
-│   └── architecture.js # 模块集成与存储兼容测试
-└── docs/           # 当前架构说明及历史设计文档
-```
+## 中文介绍
 
-模块边界、事件接口和存档范围见 [架构说明](docs/architecture.md)。
+《Cloud Republic: Venus Floating City》是一款单人卡牌策略游戏：你需要在有限回合内净化金星硫酸云、维持浮空平台完整度，并建成至少 6 个栖息地。
+
+项目包含 66 张卡牌、20 个环境事件、三档难度、沙盒、自定义牌库、阵营、局外传承、9 节点科技树、中英双语和三套主题。对局会自动保存，可在刷新后继续。
+
+### 游玩方式
+
+可直接双击 `index.html` 离线游玩，或访问上方的在线试玩地址。每回合先揭示环境事件，再自由安排打牌（最多 3 张）、修理、建造栖息地与结算。最终回合前达到净化 100% 且栖息地不少于 6 个即可获胜。
+
+### 开发与贡献
+
+运行 `npm run check` 可完成类型检查、规则/存档回归、新领域测试和离线构建。当前处于“旧 JavaScript 生产实现 + 新 TypeScript 领域内核”的双轨重构期；贡献规范见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+### 授权与素材
+
+仓库中的源代码与原创游戏内容采用 [MIT License](LICENSE)，版权所有 © 2026 Hayden Jiang。所有提交的图片都必须附带可再分发授权依据；此前无授权的第三方设计参考图已完成审计并从历史中移除，README 截图均由本项目自行渲染。

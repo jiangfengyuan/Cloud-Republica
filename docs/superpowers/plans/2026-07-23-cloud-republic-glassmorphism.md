@@ -21,7 +21,7 @@
 1. **CSS 变量向后兼容**：index.html 与 js/ui.js 的内联样式引用了 8 个旧变量名（`--text-secondary`、`--border`、`--accent-gold`、`--accent-rose`、`--accent-purple`、`--accent-cyan`、`--accent-green`、`--text-primary`，已 grep 确认）。新 `:root` 保留这些名字作为别名映射到新色板，HTML/JS 因此零改动：
    - `--accent-gold: #FFCD70`（主强调/选中/资金）、`--accent-cyan: #7EA6FF`（科研/信息，取代青）、`--accent-rose: #FF9B06`（警示/腐蚀，取代玫红）、`--accent-green: #A7F3D0`（成功/净化/完整度）、`--accent-purple: #A78BFA`（治理紫）、`--text-primary: #FFFFFF`、`--text-secondary: #CBD5E1`、`--border: rgba(255,255,255,0.25)`（玻璃边）
    - 新增玻璃令牌：`--glass-bg / --glass-bg-soft / --glass-border / --glass-shadow / --glass-highlight / --font-main`；旧 `--bg-dark/--bg-panel/--bg-card` 随旧选择器一起废弃（无任何 HTML/JS 引用，已 grep 确认）。
-2. **玻璃配方**（取自 des.jpg 参数，全文件统一）：`background: rgba(255,255,255,0.15)`、`backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px)`、`border: 1px solid rgba(255,255,255,0.25)`、`box-shadow: 0 8px 32px rgba(31,38,135,0.37), inset 0 1px 0 rgba(255,255,255,0.4)`。子级容器（资源条/卡牌/轨道项/按钮次级）用 `rgba(255,255,255,0.08)` 软玻璃，避免层层 blur 的性能与发灰问题（仅 .panel/.modal-content/.card/.turn-info/.score-card 上 blur）。
+2. **玻璃配方**（全文件统一）：`background: rgba(255,255,255,0.15)`、`backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px)`、`border: 1px solid rgba(255,255,255,0.25)`、`box-shadow: 0 8px 32px rgba(31,38,135,0.37), inset 0 1px 0 rgba(255,255,255,0.4)`。子级容器（资源条/卡牌/轨道项/按钮次级）用 `rgba(255,255,255,0.08)` 软玻璃，避免层层 blur 的性能与发灰问题（仅 .panel/.modal-content/.card/.turn-info/.score-card 上 blur）。
 3. **卡牌重叠修复**：旧结构 `.card-type-badge`（absolute 左上）+ `.card-category`（文档流首行）+ `.card-maturity`（absolute 右上）三者挤在卡顶。新结构：`.card-header` 文档流行（flex，左 `.card-type-badge` 右 `.card-category`，两者均不再 absolute），`.card-maturity` 保留 absolute 右上，`.card-header` 以 `padding-right: 34px` 避开 28px 圆点 + 8px 边距。三者物理上不可能重叠。renderHand 模板同步改（Task 2），DOM 每卡 +1 节点（动态区，不影响首屏静态基线）。
 4. **类别色条映射**（`.cat-*` 的 border-top 色，全部落入新色板）：economy `#FFCD70`（资金金）、environment `#A7F3D0`（生态绿）、governance `#A78BFA`（治理紫）、social `#E2E6F0`（中性亮）、tech `#7EA6FF`（科技蓝）、wellbeing `#CBD5E1`（中性）、venus `#FF9B06`（金星橙）。
 5. **删除项**（附录 A 有逐选择器映射）：Google Fonts `@import`；全部 `'Orbitron'`/`'Inter'` 字体引用（统一 `--font-main`）；`.turn-blocker`/`.blocker-text` 规则（组件已于第二轮移除，HTML/JS 无引用）；`.star` 规则（第二轮已改单 div 方案，无引用）。
@@ -42,7 +42,7 @@
 - [ ] **Step 1: 整文件替换 styles.css（完整代码如下，711 行）**
   ```css
   /* Cloud Republic — Glassmorphism UI (iteration 3 full rewrite)
-     Design tokens from des.jpg style guide; palette & orange Venus-gradient per approved spec.
+     Project design tokens; palette & orange Venus-gradient per approved spec.
      No webfonts, no images, no frameworks. */
 
   :root {

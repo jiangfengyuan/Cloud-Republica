@@ -6,7 +6,7 @@
 ## 1. 需求（已与用户确认）
 
 1. **Bug 修复**：卡牌上「永久/合同」类型徽标（`.card-type-badge`，绝对定位 top-left）与卡片顶部文档流文本重叠。
-2. **UI/UX 重设计**：Glassmorphism 玻璃拟态风格，参考 `des.jpg`（风格指南主图）与 `swis.jpg`（排版/网格纪律辅图）。
+2. **UI/UX 重设计**：采用 Glassmorphism 玻璃拟态风格，并以清晰排版与网格纪律作为设计原则。
    - 主色：`#FFFFFF`、`#FFCD70`、`#A7F3D0`、`#7EA6FF`
    - 主字体：SF Pro / 萍方（PingFang SC）
    - 背景：**橙黄色渐变**（用户拍板，Venus 云层风）
@@ -14,7 +14,7 @@
 ## 2. 设计令牌
 
 - 背景：橙黄系 CSS 渐变 + 径向光晕；星空保留但减淡（纯 CSS，无图片资源）
-- 玻璃面板（取自 des.jpg 参数）：
+- 玻璃面板（项目设计参数）：
   - `background: rgba(255,255,255,0.15)`
   - `backdrop-filter: blur(20px)`（带 `-webkit-` 前缀）
   - `border: 1px solid rgba(255,255,255,0.25)`
