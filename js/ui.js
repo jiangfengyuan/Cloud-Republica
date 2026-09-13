@@ -11,13 +11,19 @@
   let modalMode = null;        // null | 'event' | 'settlement'
   let modalContext = null;     // { event } for event mode (re-render on language switch)
   let lastHandSig = null;
+  let lastHandCardIds = null;
+  let lastSelectedCardsSig = '';
+  let previousPhase = null;
   let prevResources = null;    // for value rolling / flash
+  let prevProgress = null;
   let prevPermCount = 0;       // for permanent-panel pulse
   let selectedFaction = 'none'; // start-screen faction pick (cr_faction)
+  let lastOverlayTrigger = null;
+  let lastModalTrigger = null;
 
   const actions = Object.create(null);
   const deps = { actions, t, icon, engine, cardName, addLog, updateUI, updateFactionButtons,
-    dispatchGame, getState: () => state };
+    dispatchGame, getState: () => state, showScreen, hideScreen };
   const metaUI = CR.features['meta-ui'](deps);
   const deckUI = CR.features['deck-ui'](deps);
   const sandboxUI = CR.features['sandbox-ui'](deps);
@@ -75,8 +81,19 @@
     const entry = document.createElement('div');
     entry.className = 'log-entry slide-in' + (sev ? ' log-' + sev : '');
     const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const sevIcon = LOG_ICON[sev] ? `<span class="log-icon">${icon(LOG_ICON[sev])}</span>` : '';
-    entry.innerHTML = `<span class="log-time">[${time}]</span>${sevIcon} ${message}`;
+    const sevIconMarkup = LOG_ICON[sev] ? icon(LOG_ICON[sev]) : '';
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'log-time';
+    timeSpan.textContent = `[${time}]`;
+    entry.appendChild(timeSpan);
+    if (sevIconMarkup) {
+      const iconSpan = document.createElement('span');
+      iconSpan.className = 'log-icon';
+      iconSpan.innerHTML = sevIconMarkup;
+      entry.appendChild(iconSpan);
+      entry.appendChild(document.createTextNode(' '));
+    }
+    entry.appendChild(document.createTextNode(message));
     log.insertBefore(entry, log.firstChild);
 
     while (log.children.length > 50) {
@@ -124,6 +141,76 @@
   function currentTheme() { return document.documentElement.dataset.theme || 'venus'; }
   function animEnabled() { return document.documentElement.dataset.anim !== 'off'; }
 
+  function setAriaHidden(el, hidden) {
+    if (el && el.setAttribute) el.setAttribute('aria-hidden', String(hidden));
+  }
+
+  function rememberOverlayTrigger() {
+    const active = document.activeElement;
+    if (active && typeof active.focus === 'function') lastOverlayTrigger = active;
+  }
+
+  function focusFirstControl(el) {
+    if (!el || !el.querySelector) return;
+    const control = el.querySelector('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])');
+    if (control && typeof control.focus === 'function') control.focus();
+  }
+
+  function canRestoreFocus(el) {
+    if (!el || typeof el.focus !== 'function') return false;
+    return !el.getClientRects || el.getClientRects().length > 0;
+  }
+
+  function showScreen(id) {
+    const screen = document.getElementById(id);
+    if (!screen) return;
+    rememberOverlayTrigger();
+    screen.classList.remove('is-closing');
+    screen.classList.add('active');
+    setAriaHidden(screen, false);
+    setTimeout(() => focusFirstControl(screen), 0);
+  }
+
+  function hideScreen(id) {
+    const screen = document.getElementById(id);
+    if (!screen || !screen.classList.contains('active')) return;
+    const finish = () => {
+      screen.classList.remove('active', 'is-closing');
+      setAriaHidden(screen, true);
+      const modalOpen = document.getElementById('eventModal').classList.contains('active');
+      if (!modalOpen && canRestoreFocus(lastOverlayTrigger)) lastOverlayTrigger.focus();
+      lastOverlayTrigger = null;
+    };
+    if (!animEnabled()) { finish(); return; }
+    screen.classList.add('is-closing');
+    setTimeout(finish, 220);
+  }
+
+  function hideModal() {
+    const modal = document.getElementById('eventModal');
+    if (!modal) return;
+    modal.classList.remove('active');
+    setAriaHidden(modal, true);
+    setAriaHidden(document.getElementById('game-container'), false);
+    if (canRestoreFocus(lastModalTrigger)) lastModalTrigger.focus();
+    lastModalTrigger = null;
+  }
+
+  function playGameSceneIntro() {
+    const game = document.getElementById('game-container');
+    if (!game || !animEnabled()) return;
+    game.classList.remove('scene-enter');
+    void game.offsetWidth;
+    game.classList.add('scene-enter');
+  }
+
+  function replayClass(el, className) {
+    if (!el || !animEnabled()) return;
+    el.classList.remove(className);
+    void el.offsetWidth;
+    el.classList.add(className);
+  }
+
   function applyTheme(theme) {
     if (!THEMES.includes(theme)) theme = 'venus';
     document.documentElement.dataset.theme = theme;
@@ -152,6 +239,7 @@
       if (btn) {
         btn.textContent = t('theme.' + key);
         btn.classList.toggle('active', key === theme);
+        if (btn.setAttribute) btn.setAttribute('aria-pressed', String(key === theme));
       }
     });
     const cycleBtn = document.getElementById('themeCycleBtn');
@@ -188,6 +276,10 @@
     }
     lastHandSig = sig;
 
+    const cardIds = state.hand.map(card => card.uid).join(',');
+    const shouldDeal = cardIds !== lastHandCardIds;
+    lastHandCardIds = cardIds;
+
     const container = document.getElementById('handCards');
     container.innerHTML = '';
 
@@ -195,8 +287,18 @@
       const isSelected = state.selectedCards.includes(index);
       const canPlay = engine.canAfford(state, card) && state.phase === 'action' && !state.strike;
 
-      const cardEl = document.createElement('div');
+      const cardEl = document.createElement('button');
+      cardEl.type = 'button';
       cardEl.className = `card cat-${card.category} ${isSelected ? 'selected' : ''} ${!canPlay ? 'disabled' : ''}`;
+      if (shouldDeal && animEnabled()) {
+        cardEl.classList.add('card-deal-in');
+        if (cardEl.style && cardEl.style.setProperty) cardEl.style.setProperty('--card-index', index);
+      }
+      cardEl.disabled = !canPlay;
+      if (cardEl.setAttribute) {
+        cardEl.setAttribute('aria-pressed', String(isSelected));
+        cardEl.setAttribute('aria-label', `${cardName(card)} — ${cardEffect(card)}`);
+      }
 
       const maturityClass = `maturity-${card.maturity}`;
       const typeName = t('type.' + card.type);
@@ -229,11 +331,20 @@
 
   function updateSelectionClasses() {
     const container = document.getElementById('handCards');
+    const nextSelectedSig = state.selectedCards.join(',');
+    const priorSelected = new Set(lastSelectedCardsSig ? lastSelectedCardsSig.split(',') : []);
+    const selectionChanged = nextSelectedSig !== lastSelectedCardsSig;
     Array.from(container.children).forEach((el, index) => {
-      el.classList.toggle('selected', state.selectedCards.includes(index));
+      const selected = state.selectedCards.includes(index);
+      el.classList.toggle('selected', selected);
+      if (el.setAttribute) el.setAttribute('aria-pressed', String(selected));
+      if (selected && !priorSelected.has(String(index))) replayClass(el, 'card-select-pop');
     });
-    document.getElementById('selectedCount').textContent =
+    lastSelectedCardsSig = nextSelectedSig;
+    const count = document.getElementById('selectedCount');
+    count.textContent =
       `${state.selectedCards.length}/${engine.getRemainingCardPlays(state)}`;
+    if (selectionChanged) replayClass(count, 'count-pop');
   }
 
   function toggleCardSelection(index) {
@@ -269,6 +380,12 @@
       dots.action.classList.add('completed');
       dots.settlement.classList.add('active');
     }
+
+    if (previousPhase && previousPhase !== state.phase) {
+      replayClass(document.getElementById('turnInfo'), 'phase-transition');
+      replayClass(document.getElementById('currentPhase'), 'phase-change');
+    }
+    previousPhase = state.phase;
   }
 
   function renderModal() {
@@ -305,7 +422,13 @@
     modalMode = mode;
     modalContext = context || null;
     renderModal();
-    document.getElementById('eventModal').classList.add('active');
+    const modal = document.getElementById('eventModal');
+    const active = document.activeElement;
+    if (active && typeof active.focus === 'function') lastModalTrigger = active;
+    setAriaHidden(document.getElementById('game-container'), true);
+    setAriaHidden(modal, false);
+    modal.classList.add('active');
+    setTimeout(() => focusFirstControl(modal), 0);
   }
 
   // ==================== END SCREEN ====================
@@ -336,9 +459,10 @@
     const reasonText = document.getElementById('endReason');
     const board = document.getElementById('scoreBoard');
 
-    document.getElementById('eventModal').classList.remove('active');
+    hideModal();
+    setAriaHidden(document.getElementById('game-container'), true);
     modalMode = null;
-    screen.classList.add('active');
+    showScreen('endScreen');
 
     // record stats + award legacy exactly once per game (refreshTexts may re-render this screen)
     if (!state.statsRecorded) {
@@ -439,9 +563,15 @@
       animateValue(valueEl, prev, value, key === 'integrity' ? '%' : '');
 
       if (prevResources && value !== prev) {
-        el.classList.remove('res-flash-up', 'res-flash-down');
-        void el.offsetWidth; // restart animation
-        el.classList.add(value > prev ? 'res-flash-up' : 'res-flash-down');
+        replayClass(el, value > prev ? 'res-flash-up' : 'res-flash-down');
+
+        if (animEnabled()) {
+          const valueEl = el.querySelector('.resource-value');
+          valueEl.classList.remove('res-value-up', 'res-value-down');
+          void valueEl.offsetWidth;
+          valueEl.classList.add(value > prev ? 'res-value-up' : 'res-value-down');
+          setTimeout(() => valueEl.classList.remove('res-value-up', 'res-value-down'), 600);
+        }
       }
 
       const bar = el.querySelector('.resource-bar-fill');
@@ -464,6 +594,12 @@
 
     document.getElementById('habitatText').textContent = t('ui.habitat_target', { count: state.habitats, target: state.targetHabitats });
 
+    if (prevProgress) {
+      if (state.purification !== prevProgress.purification) replayClass(document.getElementById('purificationTrack'), 'progress-updated');
+      if (state.habitats !== prevProgress.habitats) replayClass(document.getElementById('habitatTrack'), 'progress-updated');
+    }
+    prevProgress = { purification: state.purification, habitats: state.habitats };
+
     const remainingCardPlays = engine.getRemainingCardPlays(state);
     document.getElementById('selectedCount').textContent = `${state.selectedCards.length}/${remainingCardPlays}`;
     document.getElementById('handHint').textContent = t('ui.hand_hint', { max: remainingCardPlays });
@@ -480,8 +616,8 @@
       state.phase !== 'action' ||
       state.strike ||
       state.habitatExpansions >= state.maxHabitatExpansions ||
-      state.resources.money < 20 ||
-      state.resources.materials < 12 + state.habitatMaterialsDelta;
+      state.resources.money < 18 ||
+      state.resources.materials < 11 + state.habitatMaterialsDelta;
 
     document.getElementById('corrosionRateText').textContent = t('ui.corrosion_rate', { rate: state.corrosionRate });
     // bar shows live corrosion pressure; 5%/turn maps to full width (adjudicated M2 fix: was dead 0%)
@@ -551,13 +687,15 @@
 
   actions.closeEventModal = function () {
     if (modalMode === 'event') {
-      document.getElementById('eventModal').classList.remove('active');
+      hideModal();
       modalMode = null;
 
       const result = dispatchGame('acknowledgeEvent');
       if (!result.ok) return;
       updateUI();
       updatePhaseIndicator();
+      replayClass(document.querySelector ? document.querySelector('.card-area') : null, 'action-ready');
+      setTimeout(() => focusFirstControl(document.getElementById('handCards')), 0);
 
       if (state.gameOver) { showEndScreen(); return; }
 
@@ -567,7 +705,7 @@
         addLog(t('ui.log.action_prompt', { max: engine.getRemainingCardPlays(state) }));
       }
     } else if (modalMode === 'settlement') {
-      document.getElementById('eventModal').classList.remove('active');
+      hideModal();
       modalMode = null;
       syncGamePresentation(dispatchGame('beginNextTurn'));
     }
@@ -599,8 +737,10 @@
       if (state.gameOver) showEndScreen();
     };
 
-    if (animEnabled()) setTimeout(run, 180); // animation delay only; not part of turn flow
-    else run();
+    if (animEnabled()) {
+      document.getElementById('playBtn').disabled = true; // re-enabled by updateUI() inside run()
+      setTimeout(run, 180); // animation delay only; not part of turn flow
+    } else run();
   };
 
   actions.repairHabitat = function () {
@@ -629,17 +769,23 @@
   };
 
   actions.startGame = function (difficultyKey) {
-    document.getElementById('startScreen').classList.remove('active');
+    hideScreen('startScreen');
+    setAriaHidden(document.getElementById('game-container'), false);
 
     const result = gameSession.start({ difficulty: difficultyKey, faction: selectedFaction, metaPerks: metaUI.getMeta().perks,
       sandboxConfig: difficultyKey === 'sandbox' ? sandboxUI.getConfig() : undefined, deckConfig: deckUI.getConfig() });
     state = result.state;
     lastHandSig = null;
+    lastHandCardIds = null;
+    lastSelectedCardsSig = '';
+    previousPhase = null;
     prevResources = null;
+    prevProgress = null;
     prevPermCount = 0;
     updateUI();
     updatePhaseIndicator();
     renderFactionBadge();
+    playGameSceneIntro();
 
     addLog(t('ui.log.game_started', { difficulty: t('difficulty.' + state.difficulty) }));
     addLog(t('ui.log.faction_chosen', { faction: t('faction.' + state.faction + '.name'), tagline: t('faction.' + state.faction + '.tagline') }));
@@ -654,10 +800,16 @@
     if (!result.ok) return;
     state = result.state;
     lastHandSig = null;
+    lastHandCardIds = null;
+    lastSelectedCardsSig = '';
+    previousPhase = null;
     prevResources = null;
+    prevProgress = null;
     prevPermCount = state.permanentCards.length;
-    document.getElementById('startScreen').classList.remove('active');
+    hideScreen('startScreen');
+    setAriaHidden(document.getElementById('game-container'), false);
     syncGamePresentation(result);
+    playGameSceneIntro();
   };
 
   // ==================== FACTION & META UI ====================
@@ -675,6 +827,7 @@
       if (!btn) return;
       btn.innerHTML = `${icon('faction.' + id)}${t('faction.' + id + '.name')}<br><span class="faction-btn-desc">${t('faction.' + id + '.desc')}</span>`;
       btn.classList.toggle('active', id === selectedFaction);
+      if (btn.setAttribute) btn.setAttribute('aria-pressed', String(id === selectedFaction));
     });
     const legacyBtnText = document.getElementById('legacyBtnText');
     if (legacyBtnText && metaUI.getMeta()) legacyBtnText.textContent = `${t('meta.title')} · ${metaUI.getMeta().legacy}`;
@@ -758,10 +911,37 @@
       const action = actions[button.dataset.action];
       if (action) action(...JSON.parse(button.dataset.args || '[]'));
     });
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      if (modalMode === 'event') {
+        actions.closeEventModal();
+        return;
+      }
+      const closeActions = {
+        techScreen: 'closeTechScreen',
+        deckScreen: 'closeDeckScreen',
+        metaScreen: 'closeMetaScreen'
+      };
+      Object.keys(closeActions).some(id => {
+        const screen = document.getElementById(id);
+        if (!screen || !screen.classList.contains('active')) return false;
+        actions[closeActions[id]]();
+        return true;
+      });
+    });
     createStars();
+    let resizeTimer = null;
+    root.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(createStars, 200);
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.body) document.body.classList.toggle('page-hidden', document.hidden);
+    });
     refreshTexts();
     document.getElementById('resumeGameBtn').style.display = gameSession.hasSavedGame() ? '' : 'none';
-    document.getElementById('startScreen').classList.add('active');
+    Object.freeze(CR); // top-level namespace only; nested modules (CR.engine.rng etc.) stay injectable
+    showScreen('startScreen');
   }
 
   if (typeof document !== 'undefined') root.addEventListener('load', boot);

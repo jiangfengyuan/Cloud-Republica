@@ -2,6 +2,7 @@
 <html lang="zh-CN" data-theme="venus">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cloud Republic: Venus Floating City | Res Publica</title>
     <link rel="stylesheet" href="styles.css">
@@ -9,118 +10,129 @@
 <body>
     <div class="stars" id="stars"></div>
 
-    <div class="end-screen" id="endScreen">
-        <div class="end-title" id="endTitle">Game Over</div>
-        <div class="end-reason" id="endReason"></div>
+    <div class="end-screen" id="endScreen" role="dialog" aria-modal="true" aria-labelledby="endTitle" aria-hidden="true">
+        <div class="end-title" id="endTitle" aria-live="assertive">Game Over</div>
+        <div class="end-reason" id="endReason" aria-live="polite"></div>
         <div class="score-board" id="scoreBoard"></div>
         <button class="btn" data-action="restart" data-args="[]"><span class="btn-icon" data-icon="action.restart"></span><span data-i18n="btn.play_again">Play Again</span></button>
     </div>
 
-    <div class="end-screen" id="startScreen">
-        <div class="game-title" style="font-size: 3rem;" data-i18n="ui.title">Cloud Republic</div>
-        <p class="game-subtitle" data-i18n="ui.subtitle" style="margin-top: 10px;">Res Publica: Venus Floating City Colonization Project</p>
-        <p style="color: var(--text-secondary); margin: 20px 0 5px;" data-i18n="ui.choose_difficulty">Choose a difficulty to start</p>
-        <p style="color: var(--text-secondary); font-size: 0.85rem;" data-i18n="ui.start_hint">Complete purification and build habitats</p>
-        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 15px;" data-i18n="ui.choose_faction">Choose a faction</p>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 10px;">
-            <button class="btn btn-secondary faction-btn" id="factionBtnNone" data-action="selectFaction" data-args="[&quot;none&quot;]"></button>
-            <button class="btn btn-secondary faction-btn" id="factionBtnGuild" data-action="selectFaction" data-args="[&quot;guild&quot;]"></button>
-            <button class="btn btn-secondary faction-btn" id="factionBtnCovenant" data-action="selectFaction" data-args="[&quot;covenant&quot;]"></button>
-            <button class="btn btn-secondary faction-btn" id="factionBtnTechnocracy" data-action="selectFaction" data-args="[&quot;technocracy&quot;]"></button>
+    <div class="end-screen" id="startScreen" role="main" aria-hidden="true">
+        <div class="start-title-wrap">
+            <div class="game-title" data-i18n="ui.title">Cloud Republic</div>
+            <p class="game-subtitle" data-i18n="ui.subtitle">Res Publica: Venus Floating City Colonization Project</p>
         </div>
-        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-top: 25px;">
-            <button class="btn btn-success diff-btn" id="diffEasy" data-action="startGame" data-args="[&quot;easy&quot;]"></button>
-            <button class="btn diff-btn" id="diffMedium" data-action="startGame" data-args="[&quot;medium&quot;]"></button>
-            <button class="btn btn-danger diff-btn" id="diffHard" data-action="startGame" data-args="[&quot;hard&quot;]"></button>
-            <button class="btn btn-secondary diff-btn" id="diffSandbox" data-action="toggleSandboxPanel" data-args="[]"></button>
+
+        <div class="start-section">
+            <div class="section-label" data-i18n="ui.choose_faction">Choose a faction</div>
+            <div class="start-row faction-choice-grid">
+                <button class="btn btn-secondary faction-btn" id="factionBtnNone" data-action="selectFaction" data-args="[&quot;none&quot;]"></button>
+                <button class="btn btn-secondary faction-btn" id="factionBtnGuild" data-action="selectFaction" data-args="[&quot;guild&quot;]"></button>
+                <button class="btn btn-secondary faction-btn" id="factionBtnCovenant" data-action="selectFaction" data-args="[&quot;covenant&quot;]"></button>
+                <button class="btn btn-secondary faction-btn" id="factionBtnTechnocracy" data-action="selectFaction" data-args="[&quot;technocracy&quot;]"></button>
+            </div>
         </div>
-        <button class="btn btn-secondary" id="resumeGameBtn" style="display: none; margin-top: 12px;" data-action="resumeGame" data-args="[]" data-i18n="btn.resume_game">Resume saved game</button>
-        <div class="sandbox-panel" id="sandboxPanel" style="display: none;">
-            <div class="sandbox-title"><span class="pt-icon" data-icon="panel.sandbox"></span> <span data-i18n="sandbox.title">Sandbox Rule Setup</span></div>
-            <div class="sandbox-row">
-                <span class="sandbox-label" data-i18n="sandbox.max_turns">Turn Limit</span>
-                <span class="sandbox-stepper">
-                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;maxTurns&quot;,-1]">-</button>
-                    <span class="sandbox-value" id="sandboxValMaxTurns"></span>
-                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;maxTurns&quot;,1]">+</button>
-                </span>
+
+        <div class="start-section">
+            <div class="section-label" data-i18n="ui.choose_difficulty">Choose a difficulty to start</div>
+            <p class="section-hint" data-i18n="ui.start_hint">Complete purification and build habitats</p>
+            <div class="start-row difficulty-choice-grid">
+                <button class="btn btn-success diff-btn" id="diffEasy" data-action="startGame" data-args="[&quot;easy&quot;]"></button>
+                <button class="btn diff-btn" id="diffMedium" data-action="startGame" data-args="[&quot;medium&quot;]"></button>
+                <button class="btn btn-danger diff-btn" id="diffHard" data-action="startGame" data-args="[&quot;hard&quot;]"></button>
+                <button class="btn btn-secondary diff-btn" id="diffSandbox" data-action="toggleSandboxPanel" data-args="[]"></button>
             </div>
-            <div class="sandbox-row">
-                <span class="sandbox-label" data-i18n="sandbox.corrosion_rate">Corrosion Rate</span>
-                <span class="sandbox-stepper">
-                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;corrosionRate&quot;,-1]">-</button>
-                    <span class="sandbox-value" id="sandboxValCorrosionRate"></span>
-                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;corrosionRate&quot;,1]">+</button>
-                </span>
+            <button class="btn btn-secondary start-resume" id="resumeGameBtn" style="display: none;" data-action="resumeGame" data-args="[]" data-i18n="btn.resume_game">Resume saved game</button>
+            <div class="sandbox-panel" id="sandboxPanel" style="display: none;">
+                <div class="sandbox-title"><span class="pt-icon" data-icon="panel.sandbox"></span> <span data-i18n="sandbox.title">Sandbox Rule Setup</span></div>
+                <div class="sandbox-row">
+                    <span class="sandbox-label" data-i18n="sandbox.max_turns">Turn Limit</span>
+                    <span class="sandbox-stepper">
+                        <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;maxTurns&quot;,-1]">-</button>
+                        <span class="sandbox-value" id="sandboxValMaxTurns"></span>
+                        <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;maxTurns&quot;,1]">+</button>
+                    </span>
+                </div>
+                <div class="sandbox-row">
+                    <span class="sandbox-label" data-i18n="sandbox.corrosion_rate">Corrosion Rate</span>
+                    <span class="sandbox-stepper">
+                        <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;corrosionRate&quot;,-1]">-</button>
+                        <span class="sandbox-value" id="sandboxValCorrosionRate"></span>
+                        <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;corrosionRate&quot;,1]">+</button>
+                    </span>
+                </div>
+                <div class="sandbox-row">
+                    <span class="sandbox-label" data-i18n="sandbox.energy_maintenance">Energy Upkeep</span>
+                    <span class="sandbox-stepper">
+                        <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;energyMaintenance&quot;,-1]">-</button>
+                        <span class="sandbox-value" id="sandboxValEnergyMaintenance"></span>
+                        <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;energyMaintenance&quot;,1]">+</button>
+                    </span>
+                </div>
+                <div class="sandbox-row">
+                    <span class="sandbox-label" data-i18n="sandbox.draw_per_turn">Draw per Turn</span>
+                    <span class="sandbox-stepper">
+                        <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;drawPerTurn&quot;,-1]">-</button>
+                        <span class="sandbox-value" id="sandboxValDrawPerTurn"></span>
+                        <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;drawPerTurn&quot;,1]">+</button>
+                    </span>
+                </div>
+                <div class="sandbox-row">
+                    <span class="sandbox-label" data-i18n="sandbox.initial_hand_size">Starting Hand</span>
+                    <span class="sandbox-stepper">
+                        <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;initialHandSize&quot;,-1]">-</button>
+                        <span class="sandbox-value" id="sandboxValInitialHandSize"></span>
+                        <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;initialHandSize&quot;,1]">+</button>
+                    </span>
+                </div>
+                <div class="sandbox-row">
+                    <span class="sandbox-label" data-i18n="sandbox.preset_label">Starting Resources</span>
+                    <span class="sandbox-stepper">
+                        <button class="btn btn-secondary sandbox-preset-btn" id="sandboxPresetPoor" data-action="setSandboxPreset" data-args="[&quot;poor&quot;]"></button>
+                        <button class="btn btn-secondary sandbox-preset-btn" id="sandboxPresetStandard" data-action="setSandboxPreset" data-args="[&quot;standard&quot;]"></button>
+                        <button class="btn btn-secondary sandbox-preset-btn" id="sandboxPresetRich" data-action="setSandboxPreset" data-args="[&quot;rich&quot;]"></button>
+                    </span>
+                </div>
+                <button class="btn btn-success sandbox-start" id="sandboxStartBtn" data-action="startSandbox" data-args="[]"><span data-i18n="sandbox.start">Start Sandbox</span></button>
             </div>
-            <div class="sandbox-row">
-                <span class="sandbox-label" data-i18n="sandbox.energy_maintenance">Energy Upkeep</span>
-                <span class="sandbox-stepper">
-                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;energyMaintenance&quot;,-1]">-</button>
-                    <span class="sandbox-value" id="sandboxValEnergyMaintenance"></span>
-                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;energyMaintenance&quot;,1]">+</button>
-                </span>
-            </div>
-            <div class="sandbox-row">
-                <span class="sandbox-label" data-i18n="sandbox.draw_per_turn">Draw per Turn</span>
-                <span class="sandbox-stepper">
-                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;drawPerTurn&quot;,-1]">-</button>
-                    <span class="sandbox-value" id="sandboxValDrawPerTurn"></span>
-                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;drawPerTurn&quot;,1]">+</button>
-                </span>
-            </div>
-            <div class="sandbox-row">
-                <span class="sandbox-label" data-i18n="sandbox.initial_hand_size">Starting Hand</span>
-                <span class="sandbox-stepper">
-                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;initialHandSize&quot;,-1]">-</button>
-                    <span class="sandbox-value" id="sandboxValInitialHandSize"></span>
-                    <button class="btn btn-secondary sandbox-step-btn" data-action="adjustSandboxParam" data-args="[&quot;initialHandSize&quot;,1]">+</button>
-                </span>
-            </div>
-            <div class="sandbox-row">
-                <span class="sandbox-label" data-i18n="sandbox.preset_label">Starting Resources</span>
-                <span class="sandbox-stepper">
-                    <button class="btn btn-secondary sandbox-preset-btn" id="sandboxPresetPoor" data-action="setSandboxPreset" data-args="[&quot;poor&quot;]"></button>
-                    <button class="btn btn-secondary sandbox-preset-btn" id="sandboxPresetStandard" data-action="setSandboxPreset" data-args="[&quot;standard&quot;]"></button>
-                    <button class="btn btn-secondary sandbox-preset-btn" id="sandboxPresetRich" data-action="setSandboxPreset" data-args="[&quot;rich&quot;]"></button>
-                </span>
-            </div>
-            <button class="btn btn-success sandbox-start" id="sandboxStartBtn" data-action="startSandbox" data-args="[]"><span data-i18n="sandbox.start">Start Sandbox</span></button>
         </div>
-        <div class="theme-row">
-            <span style="font-size: 0.8rem; color: var(--text-secondary);" data-i18n="ui.theme_label">Theme</span>
+
+        <div class="theme-row start-controls">
+            <span data-i18n="ui.theme_label">Theme</span>
             <button class="btn btn-secondary theme-btn" id="themeBtnVenus" data-action="setTheme" data-args="[&quot;venus&quot;]"></button>
             <button class="btn btn-secondary theme-btn" id="themeBtnGlacier" data-action="setTheme" data-args="[&quot;glacier&quot;]"></button>
             <button class="btn btn-secondary theme-btn" id="themeBtnAbyss" data-action="setTheme" data-args="[&quot;abyss&quot;]"></button>
             <button class="btn btn-secondary theme-btn" id="animToggleStart" data-action="toggleAnim" data-args="[]"></button>
         </div>
+
         <div class="stats-panel" id="statsPanel"></div>
-        <div style="margin-top: 18px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+
+        <div class="start-actions">
             <button class="btn btn-secondary" id="legacyBtn" data-action="openMetaScreen" data-args="[]"><span class="btn-icon" data-icon="mat.driving"></span><span id="legacyBtnText"></span></button>
             <button class="btn btn-secondary" id="deckBtn" data-action="openDeckScreen" data-args="[]"><span class="btn-icon" data-icon="panel.deck"></span><span id="deckBtnText"></span></button>
         </div>
     </div>
 
-    <div class="end-screen" id="deckScreen"></div> <!-- M4: deck builder, lazily rendered on open -->
+    <div class="end-screen" id="deckScreen" role="dialog" aria-modal="true" aria-hidden="true"></div> <!-- M4: deck builder, lazily rendered on open -->
 
-    <div class="end-screen" id="techScreen"></div> <!-- M5: tech tree, lazily rendered on open -->
+    <div class="end-screen" id="techScreen" role="dialog" aria-modal="true" aria-hidden="true"></div> <!-- M5: tech tree, lazily rendered on open -->
 
-    <div class="end-screen" id="metaScreen">
+    <div class="end-screen" id="metaScreen" role="dialog" aria-modal="true" aria-hidden="true">
         <div class="game-title" style="font-size: 2rem;" data-i18n="meta.title">Legacy</div>
         <div class="meta-balance" id="metaBalance"></div>
         <div class="meta-grid" id="metaPerkGrid"></div>
         <button class="btn" style="margin-top: 20px;" data-action="closeMetaScreen" data-args="[]"><span data-i18n="meta.close">Close</span></button>
     </div>
 
-    <div class="modal-overlay" id="eventModal">
-        <div class="modal-content">
-            <div class="modal-title"><span class="modal-icon" id="modalIcon"></span><span id="modalTitle">Environmental Event</span></div>
-            <div class="modal-text" id="modalText"></div>
+    <div class="modal-overlay" id="eventModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalText" aria-hidden="true">
+        <div class="modal-content" tabindex="-1">
+            <div class="modal-title"><span class="modal-icon" id="modalIcon"></span><span id="modalTitle" aria-live="assertive">Environmental Event</span></div>
+            <div class="modal-text" id="modalText" aria-live="polite"></div>
             <button class="btn" id="modalBtn" data-action="closeEventModal" data-args="[]">Proceed</button>
         </div>
     </div>
 
-    <div id="game-container">
+    <div id="game-container" aria-hidden="true">
         <header class="game-header">
             <div class="header-controls">
                 <button class="btn btn-secondary" id="techBtn" data-action="openTechScreen" data-args="[]"><span class="btn-icon" data-icon="panel.tech"></span><span id="techBtnText">0/9</span></button>
@@ -192,7 +204,7 @@
                     </div>
                 </div>
 
-                <div class="panel" style="margin-top: 20px;">
+                <div class="panel">
                     <div class="panel-title">
                         <span class="pt-icon" data-icon="panel.permanent"></span> <span data-i18n="ui.permanent_effects">Permanent Effects</span>
                     </div>
@@ -203,9 +215,9 @@
             </div>
 
             <div class="center-area">
-                <div class="turn-info">
+                <div class="turn-info" id="turnInfo">
                     <div>
-                        <div class="turn-phase" id="currentPhase">Setup Phase</div>
+                        <div class="turn-phase" id="currentPhase" aria-live="polite">Setup Phase</div>
                         <div class="phase-indicator" id="phaseIndicator">
                             <div class="phase-dot" id="dot-event"></div>
                             <div class="phase-dot" id="dot-action"></div>
@@ -216,7 +228,7 @@
                     </div>
                     <div style="text-align: right;">
                         <div style="font-size: 0.85rem; color: var(--text-secondary);" data-i18n="ui.cards_selected">Cards Selected</div>
-                        <div style="font-size: 1.5rem; color: var(--accent-gold);" id="selectedCount">0/3</div>
+                        <div style="font-size: 1.5rem; color: var(--accent-gold);" id="selectedCount" aria-live="polite">0/3</div>
                     </div>
                 </div>
 
@@ -224,7 +236,7 @@
                     <div class="panel-title">
                         <span class="pt-icon" data-icon="panel.globe"></span> <span data-i18n="ui.global_progress">Global Progress</span>
                     </div>
-                    <div class="track-item">
+                    <div class="track-item" id="purificationTrack">
                         <div class="track-header">
                             <span class="th-label"><span class="th-icon th-pur" data-icon="cat.environment"></span><span data-i18n="ui.purification_label">Sulfuric Acid Cloud Purification</span></span>
                             <span id="purificationText">0%</span>
@@ -234,7 +246,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="track-item">
+                    <div class="track-item" id="habitatTrack">
                         <div class="track-header">
                             <span class="th-label"><span class="th-icon th-hab" data-icon="action.build"></span><span data-i18n="ui.habitat_count">Habitat Count</span></span>
                             <span id="habitatText">1 / 6</span>
@@ -243,7 +255,7 @@
                 </div>
 
                 <div class="panel card-area" style="position: relative;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div class="hand-heading" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <div class="panel-title" style="margin: 0;">
                             <span class="pt-icon" data-icon="panel.hand"></span> <span data-i18n="ui.hand">Hand</span>
                         </div>
@@ -257,7 +269,7 @@
                     <div class="btn-group">
                         <button class="btn" id="playBtn" data-action="playSelectedCards" data-args="[]" disabled><span class="btn-icon" data-icon="action.play"></span><span data-i18n="btn.play">Play Selected Cards</span></button>
                         <button class="btn btn-secondary" id="repairBtn" data-action="repairHabitat" data-args="[]"><span class="btn-icon" data-icon="action.repair"></span><span data-i18n="btn.repair">Repair (-2 Materials +1%)</span></button>
-                        <button class="btn btn-secondary" id="buildHabitatBtn" data-action="buildHabitat" data-args="[]"><span class="btn-icon" data-icon="action.build"></span><span data-i18n="btn.build">Build Habitat (-20 Funds -12 Materials)</span></button>
+                        <button class="btn btn-secondary" id="buildHabitatBtn" data-action="buildHabitat" data-args="[]"><span class="btn-icon" data-icon="action.build"></span><span data-i18n="btn.build">Build Habitat (-18 Funds -11 Materials)</span></button>
                     </div>
                     <div class="phase-actions" id="actionPhaseControls">
                         <button class="btn btn-success" id="endTurnBtn" data-action="endTurn" data-args="[]"><span class="btn-icon" data-icon="action.turn"></span><span data-i18n="btn.next_turn">Next Turn</span></button>
@@ -295,7 +307,7 @@
                     </div>
                 </div>
 
-                <div class="panel" style="margin-top: 20px;">
+                <div class="panel">
                     <div class="panel-title">
                         <span class="pt-icon" data-icon="panel.rules"></span> <span data-i18n="rules.title">Game Rules</span>
                     </div>

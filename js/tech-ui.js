@@ -3,7 +3,7 @@
   const CR = root.CR;
   CR.features = CR.features || {};
   CR.features['tech-ui'] = function (deps) {
-    const { actions, t, icon } = deps;
+    const { actions, t, icon, showScreen, hideScreen } = deps;
     const { engine, addLog, updateUI, dispatchGame } = deps;
   // ==================== TECH TREE (M5) ====================
 
@@ -57,11 +57,11 @@
   actions.openTechScreen = function () {
     if (!deps.getState()) return; // in-run only: no tech tree before a game starts
     renderTechScreen();
-    document.getElementById('techScreen').classList.add('active');
+    showScreen('techScreen');
   };
 
   actions.closeTechScreen = function () {
-    document.getElementById('techScreen').classList.remove('active');
+    hideScreen('techScreen');
   };
 
   actions.buyTech = function (id) {

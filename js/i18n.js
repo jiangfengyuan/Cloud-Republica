@@ -12,9 +12,9 @@
       'difficulty.easy': '简单',
       'difficulty.medium': '中等',
       'difficulty.hard': '困难',
-      'difficulty.easy_desc': '24 回合 · 资源丰富 · 腐蚀缓慢 · 维护 -4 能源',
-      'difficulty.medium_desc': '22 回合 · 标准体验 · 维护 -4 能源',
-      'difficulty.hard_desc': '19 回合 · 资源紧张 · 腐蚀加剧 · 维护 -5 能源',
+      'difficulty.easy_desc': '25 回合 · 资源丰富 · 腐蚀缓慢 · 维护 -4 能源',
+      'difficulty.medium_desc': '23 回合 · 标准体验 · 维护 -4 能源',
+      'difficulty.hard_desc': '20 回合 · 资源紧张 · 腐蚀加剧 · 维护 -5 能源',
       'ui.difficulty_label': '难度',
       'ui.lang_btn': 'EN',
       'theme.venus': '金星橙',
@@ -184,7 +184,7 @@
       'phase.ended': '游戏结束',
       'btn.play': '打出所选卡牌',
       'btn.repair': '修理（-2 材料 +1%）',
-      'btn.build': '建造栖息地（-20 资金 -12 材料）',
+      'btn.build': '建造栖息地（-18 资金 -11 材料）',
       'btn.next_turn': '下一回合',
       'btn.begin_turn': '开始回合 {turn}',
       'btn.play_again': '再来一局',
@@ -304,7 +304,7 @@
       'fail.no_materials_repair': '材料不足，无法修理！',
       'fail.strike_build': '工人在罢工！无法建造！',
       'fail.habitat_limit': '栖息地扩容已达上限（{max} 次）',
-      'fail.build_cost': '资源不足：建造栖息地需要 20 资金 + 12 材料'
+      'fail.build_cost': '资源不足：建造栖息地需要 18 资金 + 11 材料'
     },
 
     en: {
@@ -315,9 +315,9 @@
       'difficulty.easy': 'Easy',
       'difficulty.medium': 'Medium',
       'difficulty.hard': 'Hard',
-      'difficulty.easy_desc': '24 turns · Rich resources · Slow corrosion · -4 Energy upkeep',
-      'difficulty.medium_desc': '22 turns · Standard experience · -4 Energy upkeep',
-      'difficulty.hard_desc': '19 turns · Tight resources · Faster corrosion · -5 Energy upkeep',
+      'difficulty.easy_desc': '25 turns · Rich resources · Slow corrosion · -4 Energy upkeep',
+      'difficulty.medium_desc': '23 turns · Standard experience · -4 Energy upkeep',
+      'difficulty.hard_desc': '20 turns · Tight resources · Faster corrosion · -5 Energy upkeep',
       'ui.difficulty_label': 'Difficulty',
       'ui.lang_btn': '中文',
       'theme.venus': 'Venus',
@@ -483,7 +483,7 @@
       'phase.ended': 'Game Over',
       'btn.play': 'Play Selected Cards',
       'btn.repair': 'Repair (-2 Materials +1%)',
-      'btn.build': 'Build Habitat (-20 Funds -12 Materials)',
+      'btn.build': 'Build Habitat (-18 Funds -11 Materials)',
       'btn.next_turn': 'Next Turn',
       'btn.begin_turn': 'Begin Turn {turn}',
       'btn.play_again': 'Play Again',
@@ -599,7 +599,7 @@
       'fail.no_materials_repair': 'Insufficient materials for repair!',
       'fail.strike_build': 'Workers on strike! Cannot build!',
       'fail.habitat_limit': 'Habitat expansion limit reached ({max} max)',
-      'fail.build_cost': 'Insufficient resources: Build Habitat costs 20 Funds + 12 Materials'
+      'fail.build_cost': 'Insufficient resources: Build Habitat costs 18 Funds + 11 Materials'
     }
   };
 

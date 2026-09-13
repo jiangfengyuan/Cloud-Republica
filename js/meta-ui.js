@@ -3,7 +3,7 @@
   const CR = root.CR;
   CR.features = CR.features || {};
   CR.features['meta-ui'] = function (deps) {
-    const { actions, t, icon } = deps;
+    const { actions, t, icon, showScreen, hideScreen } = deps;
     const { loadStats, loadMeta } = CR.storage;
     let stats = null, meta = null;
     const { updateFactionButtons } = deps;
@@ -80,11 +80,11 @@
 
   actions.openMetaScreen = function () {
     renderMetaScreen();
-    document.getElementById('metaScreen').classList.add('active');
+    showScreen('metaScreen');
   };
 
   actions.closeMetaScreen = function () {
-    document.getElementById('metaScreen').classList.remove('active');
+    hideScreen('metaScreen');
   };
 
   actions.buyPerk = function (id) {

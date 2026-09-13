@@ -3,7 +3,7 @@
   const CR = root.CR;
   CR.features = CR.features || {};
   CR.features['deck-ui'] = function (deps) {
-    const { actions, t, icon } = deps;
+    const { actions, t, icon, showScreen, hideScreen } = deps;
     const { loadDeck, defaultDeck } = CR.storage;
     let deck = null;
     const { cardName } = deps;
@@ -115,11 +115,11 @@
   actions.openDeckScreen = function () {
     if (!deck) deck = loadDeck(); // defensive: boot() normally loads it first
     renderDeckScreen();
-    document.getElementById('deckScreen').classList.add('active');
+    showScreen('deckScreen');
   };
 
   actions.closeDeckScreen = function () {
-    document.getElementById('deckScreen').classList.remove('active');
+    hideScreen('deckScreen');
     updateDeckButton();
   };
 

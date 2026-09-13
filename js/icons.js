@@ -7,7 +7,7 @@
     trending: '#7EA6FF',
     emerging: '#FFCD70',
     signaling: '#A78BFA',
-    brewing: '#FF9B06'
+    brewing: '#F59E4A'
   };
 
   // 24x24 stroke icons (currentColor). Keep each icon <= 4 child nodes (DOM budget, plan note 8).

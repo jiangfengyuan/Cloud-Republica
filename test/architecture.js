@@ -29,6 +29,8 @@ class Element {
     return this.parts.get(selector);
   }
   querySelectorAll() { return []; }
+  setAttribute(name, value) { (this.attributes ||= new Map()).set(name, String(value)); }
+  getAttribute(name) { return this.attributes ? (this.attributes.get(name) ?? null) : null; }
   addEventListener(name, fn) { this.listeners[name] = fn; }
 }
 const elements = new Map([...html.matchAll(/\bid="([^"]+)"/g)].map(m => [m[1], new Element()]));
@@ -38,6 +40,7 @@ const document = {
   getElementById: id => elements.get(id) || null,
   querySelectorAll: () => [],
   createElement: () => new Element(),
+  createTextNode: text => ({ text }),
   addEventListener: (name, fn) => { docListeners[name] = fn; }
 };
 let boot;
@@ -78,8 +81,10 @@ assert(el('startScreen').classList.contains('active'), 'disabled actions ignored
 click('selectFaction', ['technocracy']);
 click('startGame', ['easy']);
 assert(el('eventModal').classList.contains('active'));
+assert.equal(el('game-container').getAttribute('aria-hidden'), 'true', 'board hidden while event modal is open');
 assert.equal(el('currentPhase').textContent, CR.i18n.t('phase.event'));
 click('closeEventModal');
+assert.equal(el('game-container').getAttribute('aria-hidden'), 'false', 'board exposed to screen readers after the modal closes');
 assert.equal(el('currentPhase').textContent, CR.i18n.t('phase.action'));
 const cardsBefore = el('handCards').children.length;
 el('handCards').children[0].listeners.click();
@@ -95,6 +100,9 @@ assert(el('techScreen').innerHTML.includes(CR.i18n.t('tech.atm_1.name')));
 click('closeTechScreen');
 click('endTurn');
 assert.equal(el('currentPhase').textContent, CR.i18n.t('phase.settlement'));
+docListeners.keydown({ key: 'Escape' });
+assert.equal(el('currentPhase').textContent, CR.i18n.t('phase.settlement'), 'Escape does not advance settlement modal');
+assert(el('eventModal').classList.contains('active'), 'settlement modal stays open after Escape');
 click('closeEventModal');
 assert.equal(el('currentPhase').textContent, CR.i18n.t('phase.event'));
 assert(el('turnText').textContent.includes('2'));
