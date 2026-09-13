@@ -55,6 +55,7 @@
   // ==================== RESOURCE MANAGEMENT ====================
 
   function modifyResource(state, type, amount) {
+    if (!Number.isFinite(amount)) return;
     state.resources[type] += amount;
 
     if (type === 'integrity') {
@@ -105,7 +106,7 @@
       const delta = effect.purification > 0
         ? effect.purification * (state.purificationMultiplier || 1)
         : effect.purification;
-      state.purification = Math.min(100, state.purification + delta);
+      state.purification = Math.max(0, Math.min(100, state.purification + delta));
       log('log.purification_change', { amount: (delta > 0 ? '+' : '') + Math.round(delta * 10) / 10 });
     }
   }
@@ -465,20 +466,20 @@
     return { ok: true };
   }
 
-  // spec 3.1 + 3.8: 20 Funds + 12 Materials, +1 habitat, shares the maxHabitatExpansions (5) limit
-  // M2: habitatMaterialsDelta (covenant) raises the materials cost (12 + delta)
+  // A base habitat is the dependable victory route: 18 Funds + 11 Materials.
+  // M2: habitatMaterialsDelta (covenant) adjusts the materials cost (11 + delta).
   function buildHabitat(state) {
     if (state.phase !== 'action') return { ok: false, reason: 'fail.not_action_phase' };
     if (state.strike) return { ok: false, reason: 'fail.strike_build' };
     if (state.habitatExpansions >= state.maxHabitatExpansions) {
       return { ok: false, reason: 'fail.habitat_limit', reasonParams: { max: state.maxHabitatExpansions } };
     }
-    const materialsCost = 12 + (state.habitatMaterialsDelta || 0);
-    if (state.resources.money < 20 || state.resources.materials < materialsCost) {
+    const materialsCost = 11 + (state.habitatMaterialsDelta || 0);
+    if (state.resources.money < 18 || state.resources.materials < materialsCost) {
       return { ok: false, reason: 'fail.build_cost' };
     }
 
-    modifyResource(state, 'money', -20);
+    modifyResource(state, 'money', -18);
     modifyResource(state, 'materials', -materialsCost);
     state.habitats++;
     state.habitatExpansions++;
@@ -524,7 +525,7 @@
     // M2: researchIncome (technocracy) — flat +N research per settlement
     if (state.researchIncome) modifyResource(state, 'research', state.researchIncome);
     if (income.purification) {
-      state.purification = Math.min(100, state.purification + income.purification);
+      state.purification = Math.max(0, Math.min(100, state.purification + income.purification));
       log('log.purification_income', { amount: income.purification, total: state.purification.toFixed(1) });
     }
 

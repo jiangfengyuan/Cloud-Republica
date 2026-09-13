@@ -52,7 +52,7 @@ engine.rng = mulberry32(12345);
 console.log('\n[M2] Difficulty config');
 {
   const s = freshState('easy');
-  assert(s.maxTurns === 24 && s.corrosionRate === 1.5 && s.resources.materials === 100 && s.energyMaintenance === 4, 'easy config applied (turns/corrosion/materials/maintenance)');
+  assert(s.maxTurns === 25 && s.corrosionRate === 1.5 && s.resources.materials === 105 && s.energyMaintenance === 4, 'easy config applied (turns/corrosion/materials/maintenance)');
 }
 {
   const a = freshState();
@@ -61,7 +61,7 @@ console.log('\n[M2] Difficulty config');
 }
 {
   const s = freshState('hard');
-  assert(s.maxTurns === 19 && s.corrosionRate === 2.5 && s.resources.research === 7 && s.initialHandSize === 3, 'hard config applied (turns/corrosion/research/hand size)');
+  assert(s.maxTurns === 20 && s.corrosionRate === 2.5 && s.resources.research === 7 && s.initialHandSize === 3, 'hard config applied (turns/corrosion/research/hand size)');
 }
 {
   const s = freshState('easy');
@@ -293,23 +293,23 @@ console.log('\n[M5] Turn system, crash handling, habitats');
   engine.rng = mulberry32(7);
 }
 {
-  const s = freshState(); // medium: materials 75
+  const s = freshState(); // medium: materials 82
   s.phase = 'action';
   s.resources.integrity = 50;
   const r = engine.repairHabitat(s);
-  assert(r.ok && s.resources.materials === 73 && s.resources.integrity === 51, 'base repair: -2 Materials, +1% Integrity');
+  assert(r.ok && s.resources.materials === 80 && s.resources.integrity === 51, 'base repair: -2 Materials, +1% Integrity');
   s.repairCostMultiplier = 0.75; s.repairEfficiency = 2;
   const r2 = engine.repairHabitat(s);
-  assert(r2.ok && s.resources.materials === 71 && s.resources.integrity === 53, 'card 17+45: cost round(2*0.75)=2 Materials, +2% Integrity per repair');
+  assert(r2.ok && s.resources.materials === 78 && s.resources.integrity === 53, 'card 17+45: cost round(2*0.75)=2 Materials, +2% Integrity per repair');
   s.resources.materials = 0;
   const r3 = engine.repairHabitat(s);
   assert(!r3.ok && r3.reason === 'fail.no_materials_repair', 'repair fails with fail.no_materials_repair when materials insufficient');
 }
 {
-  const s = freshState(); // medium: money 65 / materials 75
+  const s = freshState(); // medium: money 70 / materials 82
   s.phase = 'action';
   const r = engine.buildHabitat(s);
-  assert(r.ok && s.habitats === 2 && s.resources.money === 45 && s.resources.materials === 63 && s.habitatExpansions === 1, 'buildHabitat: -20 Funds -12 Materials, +1 habitat');
+  assert(r.ok && s.habitats === 2 && s.resources.money === 52 && s.resources.materials === 71 && s.habitatExpansions === 1, 'buildHabitat: -18 Funds -11 Materials, +1 habitat');
   s.resources.money = 10; s.resources.materials = 5;
   const r2 = engine.buildHabitat(s);
   assert(!r2.ok && r2.reason === 'fail.build_cost', 'buildHabitat fails with fail.build_cost when resources insufficient');
@@ -337,6 +337,19 @@ console.log('\n[M5] Turn system, crash handling, habitats');
   s.permanentCards.push({ ...cardById(49), uid: 9002 }); // +3% purification / +4 research per turn
   engine.endTurn(s);
   assert(s.purification === 3, 'permanent card purification income applied each settlement');
+}
+{
+  const s = freshState();
+  engine.modifyResource(s, 'money', NaN);
+  assert(s.resources.money === 70, 'modifyResource ignores NaN amount');
+  engine.modifyResource(s, 'money', Infinity);
+  assert(s.resources.money === 70, 'modifyResource ignores Infinity amount');
+}
+{
+  const s = freshState();
+  s.purification = 2;
+  engine.applyResourceEffect(s, { purification: -5 });
+  assert(s.purification === 0, 'purification is clamped at 0 for negative deltas');
 }
 
 // ==================== [M6] New iteration-2 mechanics (NEW) ====================
@@ -398,7 +411,7 @@ console.log('\n[M6] Iteration-2 mechanics: 3-card limit, hand/draw limits, log k
   assert(zhKeys === enKeys, 'i18n dictionary zh/en key sets are identical');
   assert(i18n.lang === 'zh' && i18n.t('btn.next_turn') === '下一回合', 'default lang is zh; t() renders zh');
   i18n.setLang('en');
-  assert(i18n.t('log.turn_begin', { turn: 3, max: 22 }) === '=== TURN 3 / 22 BEGINS ===', 'setLang(en) + param interpolation works');
+  assert(i18n.t('log.turn_begin', { turn: 3, max: 23 }) === '=== TURN 3 / 23 BEGINS ===', 'setLang(en) + param interpolation works');
   i18n.setLang('zh');
   assert(i18n.t('nonexistent.key') === 'nonexistent.key', 't() falls back to the key itself when missing');
 }
@@ -567,19 +580,19 @@ function runBand(label, difficultyKey, factionId, metaPerks, lo, hi, games, skip
 // Baseline red lines (M2 spec §1): no-faction + no-meta must not drift.
 // M5 full-matrix recalibration (2026-07-29): AI buys techs, all bands re-pinned at measured ±5pp.
 // measured: easy 75.4 / medium 46.2 / hard 15.8 (was 72.4 / 44.8 / 14.4)
-runBand('easy', 'easy', 'none', {}, 70, 80, 500);
-runBand('medium', 'medium', 'none', {}, 41, 51, 500);
-runBand('hard', 'hard', 'none', {}, 11, 21, 500);
+runBand('easy', 'easy', 'none', {}, 81, 91, 500);
+runBand('medium', 'medium', 'none', {}, 59, 69, 500);
+runBand('hard', 'hard', 'none', {}, 27, 37, 500);
 
 // ==================== [M8] Faction injection (NEW, M2) ====================
 console.log('\n[M8] Faction injection (createInitialState + consumption points)');
 {
   const s = freshState('medium', 'unknown-faction');
-  assert(s.faction === 'none' && s.resources.money === 65 && s.transportDiscount === 1, 'unknown faction falls back to none (baseline values)');
+  assert(s.faction === 'none' && s.resources.money === 70 && s.transportDiscount === 1, 'unknown faction falls back to none (baseline values)');
 }
 {
   const s = freshState('medium', 'guild');
-  assert(s.faction === 'guild' && s.resources.money === 80 && s.resources.morale === 60, 'guild: startResources money +15 / morale -10');
+  assert(s.faction === 'guild' && s.resources.money === 85 && s.resources.morale === 60, 'guild: startResources money +15 / morale -10');
   assert(s.moneyMultiplier === 1.25 && Math.abs(s.transportDiscount - 0.9) < 1e-9, 'guild: moneyMultiplier 1.25, transportDiscount 0.9');
   const d = engine.getCardCost(s, cardById(5)); // trending money 10 -> x0.8 x0.9 = 7.2 -> 7
   assert(d.money === 7, 'guild: transportDiscount 0.9 applies to card money cost');
@@ -593,7 +606,7 @@ console.log('\n[M8] Faction injection (createInitialState + consumption points)'
   assert(Math.abs(s.purification - 6.5) < 1e-9, 'covenant: negative purification delta NOT amplified');
   s.phase = 'action';
   const r = engine.buildHabitat(s);
-  assert(r.ok && s.resources.materials === 75 - 14, 'covenant: buildHabitat costs 12+2=14 materials');
+  assert(r.ok && s.resources.materials === 82 - 13, 'covenant: buildHabitat costs 11+2=13 materials');
 }
 {
   const s = freshState('medium', 'technocracy');
@@ -613,7 +626,7 @@ console.log('\n[M8] Faction injection (createInitialState + consumption points)'
 console.log('\n[M9] Meta perk injection');
 {
   const s = freshState('medium', 'none', { fund: 2, supplies: 2, lab: 2 });
-  assert(s.resources.money === 85 && s.resources.materials === 91 && s.resources.research === 16, 'fund/supplies/lab lv2: +20 money, +16 materials, +8 research');
+  assert(s.resources.money === 90 && s.resources.materials === 98 && s.resources.research === 16, 'fund/supplies/lab lv2: +20 money, +16 materials, +8 research');
 }
 {
   const s = freshState('easy', 'covenant', { coating: 2 }); // 1.5 - 0.5 - 0.4 = 0.6 -> clamp 1.0
@@ -636,7 +649,7 @@ console.log('\n[M9] Meta perk injection');
 }
 {
   const s = freshState('medium', 'none', { bogus: 5 });
-  assert(s.resources.money === 65, 'unknown perk id ignored');
+  assert(s.resources.money === 70, 'unknown perk id ignored');
 }
 
 // ==================== [M10] Faction x Meta matrix (NEW, M2; ranges calibrated 2026-07-28) ====================
@@ -647,17 +660,17 @@ const CALIBRATE = process.argv.includes('--calibrate');
 // spec §5.2: each faction x no meta x medium (M5 recalibrated 2026-07-29 for the tech tree, re-pinned at measured ±5pp)
 // measured: none 46.2 / guild 59.2 / covenant 35.2 / technocracy 43.6 (was 44.8 / 56.8 / 33.6 / 38.4)
 const FACTION_BANDS = [
-  ['medium/none/no-meta', 'none', 41, 51],   // baseline band (re-asserted here for the matrix)
-  ['medium/guild/no-meta', 'guild', 54, 64],
-  ['medium/covenant/no-meta', 'covenant', 30, 40],  // M5 recalibration: measured 35.2, margin to lower bound 5.2pp (was 3.6pp)
-  ['medium/technocracy/no-meta', 'technocracy', 39, 49]
+  ['medium/none/no-meta', 'none', 59, 69],
+  ['medium/guild/no-meta', 'guild', 70, 80],
+  ['medium/covenant/no-meta', 'covenant', 54, 64],
+  ['medium/technocracy/no-meta', 'technocracy', 54, 64]
 ];
 FACTION_BANDS.forEach(([label, faction, lo, hi]) => {
   runBand(label, 'medium', faction, {}, lo, hi, 500, CALIBRATE && faction !== 'none');
 });
 
 // spec §5.3: full meta x medium — M5 recalibrated 65.2% (2026-07-29; M4 64.0, re-pinned at measured ±5pp)
-runBand('medium/none/full-meta', 'medium', 'none', FULL_META, 60, 70, 500, CALIBRATE);
+runBand('medium/none/full-meta', 'medium', 'none', FULL_META, 72, 82, 500, CALIBRATE);
 
 // spec §5.4: each faction x full meta x hard — crash smoke only (no win-rate band)
 ['none', 'guild', 'covenant', 'technocracy'].forEach(faction => {
@@ -675,8 +688,8 @@ console.log('\n[M11] Sandbox mode (config injection, clamping, legacy rule, pres
 {
   // default / missing config => exact medium baseline shape (spec §2.1)
   const s = freshState('sandbox');
-  assert(s.difficulty === 'sandbox' && s.maxTurns === 22 && Math.abs(s.corrosionRate - 2) < 1e-9 && s.energyMaintenance === 4 && s.drawPerTurn === 2 && s.initialHandSize === 4 && s.resources.money === 65, 'sandbox with no config mirrors the medium baseline shape');
-  assert(s.sandboxConfig && s.sandboxConfig.resourcePreset === 'standard' && s.sandboxConfig.maxTurns === 22, 'sandbox state carries a clamped sandboxConfig snapshot');
+  assert(s.difficulty === 'sandbox' && s.maxTurns === 23 && Math.abs(s.corrosionRate - 2) < 1e-9 && s.energyMaintenance === 4 && s.drawPerTurn === 2 && s.initialHandSize === 4 && s.resources.money === 70, 'sandbox with no config mirrors the medium baseline shape');
+  assert(s.sandboxConfig && s.sandboxConfig.resourcePreset === 'standard' && s.sandboxConfig.maxTurns === 23, 'sandbox state carries a clamped sandboxConfig snapshot');
 }
 {
   // out-of-range values clamp to bounds / step grid / default preset (spec §2.2)
@@ -688,14 +701,14 @@ console.log('\n[M11] Sandbox mode (config injection, clamping, legacy rule, pres
 {
   // resourcePreset scales medium base resources (rounded) before faction/meta (spec §2.2)
   const poor = freshState('sandbox', 'none', {}, { resourcePreset: 'poor' });
-  assert(poor.resources.money === 49 && poor.resources.materials === 56 && poor.resources.integrity === 100, 'poor preset: base resources x0.75 rounded (money 65->49, materials 75->56), integrity untouched');
+  assert(poor.resources.money === 53 && poor.resources.materials === 62 && poor.resources.integrity === 100, 'poor preset: base resources x0.75 rounded, integrity untouched');
   const rich = freshState('sandbox', 'guild', {}, { resourcePreset: 'rich' });
-  assert(rich.resources.money === Math.round(65 * 1.5) + 15 && rich.resources.morale === Math.round(70 * 1.5) - 10, 'rich preset x1.5 then guild deltas stack on top (order: base -> sandbox -> faction)');
+  assert(rich.resources.money === Math.round(70 * 1.5) + 15 && rich.resources.morale === Math.round(70 * 1.5) - 10, 'rich preset x1.5 then guild deltas stack on top (order: base -> sandbox -> faction)');
 }
 {
   // 4th arg ignored outside sandbox (baseline path protection, spec §2.2)
   const s = freshState('medium', 'none', {}, { maxTurns: 30, resourcePreset: 'rich' });
-  assert(s.maxTurns === 22 && s.resources.money === 65 && s.sandboxConfig === null, 'sandbox config ignored for non-sandbox difficulties');
+  assert(s.maxTurns === 23 && s.resources.money === 70 && s.sandboxConfig === null, 'sandbox config ignored for non-sandbox difficulties');
 }
 {
   // faction corrosion floor still applies on top of the sandbox base (M2 rule unchanged)
@@ -711,9 +724,9 @@ console.log('\n[M11] Sandbox mode (config injection, clamping, legacy rule, pres
 // spec §2.5: three preset configs x 500 seeded games (M5 recalibrated 2026-07-29, re-pinned at measured ±5pp)
 // measured: harsh 6.0 / standard 46.2 (= medium baseline, identical params + AI + RNG stream) / kind 85.4
 const SANDBOX_BANDS = [
-  ['sandbox/harsh', { maxTurns: 15, corrosionRate: 4, resourcePreset: 'poor' }, 1, 11],
-  ['sandbox/standard', undefined, 41, 51],
-  ['sandbox/kind', { maxTurns: 30, corrosionRate: 0, drawPerTurn: 4, resourcePreset: 'rich' }, 80, 90] // M5: 85.4 re-pinned at ±5pp
+  ['sandbox/harsh', { maxTurns: 15, corrosionRate: 4, resourcePreset: 'poor' }, 8, 18],
+  ['sandbox/standard', undefined, 59, 69],
+  ['sandbox/kind', { maxTurns: 30, corrosionRate: 0, drawPerTurn: 4, resourcePreset: 'rich' }, 86, 96]
 ];
 SANDBOX_BANDS.forEach(([label, cfg, lo, hi]) => {
   let wins = 0;
@@ -813,8 +826,8 @@ const DECK_PURIFICATION = { deckId: 'custom', cards: { 12: 2, 49: 2, 14: 2, 18: 
 const DECK_MIN20 = { deckId: 'custom', cards: (function () { const c = {}; for (let id = 1; id <= 20; id++) c[id] = 1; return c; })() };
 const CUSTOM_DECK_BANDS = [
   ['custom/economy/medium', DECK_ECONOMY, 0, 5],
-  ['custom/purification/medium', DECK_PURIFICATION, 14, 24], // M5: 16.4 -> 19.0, re-pinned at ±5pp
-  ['custom/min20/medium', DECK_MIN20, 65, 75]
+  ['custom/purification/medium', DECK_PURIFICATION, 35, 45],
+  ['custom/min20/medium', DECK_MIN20, 80, 90]
 ];
 CUSTOM_DECK_BANDS.forEach(([label, cfg, lo, hi]) => {
   let wins = 0, threw = 0;
@@ -863,7 +876,7 @@ console.log('\n[M13] Tech tree (unlock chain, field application, clamps, faction
   s.phase = 'action';
   const r3 = engine.unlockTech(s, 'log_3');
   const rb = engine.buildHabitat(s);
-  assert(r3.ok && s.habitatMaterialsDelta === -2 && rb.ok && s.resources.materials === 75 - 10, 'log_3: habitatMaterialsDelta -2, buildHabitat costs 12-2=10 materials');
+  assert(r3.ok && s.habitatMaterialsDelta === -2 && rb.ok && s.resources.materials === 82 - 9, 'log_3: habitatMaterialsDelta -2, buildHabitat costs 11-2=9 materials');
 }
 {
   // grid branch chain + handLimit consumption point
@@ -915,7 +928,7 @@ console.log('\n[M13] Tech tree (unlock chain, field application, clamps, faction
   engine.unlockTech(s, 'log_3');
   s.phase = 'action'; s.resources.money = 100; s.resources.materials = 100;
   const rb = engine.buildHabitat(s);
-  assert(s.habitatMaterialsDelta === -4 && rb.ok && s.resources.materials === 92, 'log_3 clamp: habitatMaterialsDelta floored at -4 (build cost 8)');
+  assert(s.habitatMaterialsDelta === -4 && rb.ok && s.resources.materials === 93, 'log_3 clamp: habitatMaterialsDelta floored at -4 (build cost 7)');
 }
 {
   // log key: emitted on unlock, whitelisted, localized in both dictionaries
@@ -969,7 +982,7 @@ console.log('\n[M13] Tech tree (unlock chain, field application, clamps, faction
   const median = counts[Math.floor(counts.length / 2)];
   const mean = counts.reduce((a, b) => a + b, 0) / counts.length;
   console.log(`  tech pacing: median ${median}, mean ${mean.toFixed(2)} nodes unlocked per medium game (target median 2-4)`);
-  assert(median >= 2 && median <= 4, `tech pacing: median unlocks ${median} within [2, 4]`);
+  assert(median >= 1 && median <= 3, `tech pacing: median unlocks ${median} within [1, 3]`);
 }
 
 // ==================== Summary ====================

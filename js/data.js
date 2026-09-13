@@ -70,7 +70,7 @@
             { id: 60, name: "Fitness Facilities", category: "wellbeing", maturity: "emerging", cost: { money: 10, materials: 5, energy: 3, research: 0 }, effect: "Morale +4 Integrity +1%", type: "contract", venusEffect: { morale: 4, integrity: 1 } },
 
             { id: 61, name: "Sulfuric Cloud Purification Pilot", category: "venus", maturity: "brewing", cost: { money: 30, materials: 15, energy: 10, research: 10 }, effect: "Purification progress +20%", type: "contract", venusEffect: { purification: 20 } },
-            { id: 62, name: "Floating Bubble Expansion", category: "venus", maturity: "emerging", cost: { money: 40, materials: 30, energy: 15, research: 5 }, effect: "+1 Habitat (shared 5-expansion limit)", type: "contract", venusEffect: { habitat: 1 }, special: "expand" },
+            { id: 62, name: "Floating Bubble Expansion", category: "venus", maturity: "emerging", cost: { money: 22, materials: 16, energy: 8, research: 4 }, effect: "+1 Habitat (shared 5-expansion limit)", type: "contract", venusEffect: { habitat: 1 }, special: "expand" },
             { id: 63, name: "CO2 Electrolysis Oxygen", category: "venus", maturity: "emerging", cost: { money: 20, materials: 10, energy: 0, research: 8 }, effect: "Life support self-sufficient Energy +4/turn", type: "permanent", venusEffect: { energy: 4 } },
             { id: 64, name: "High-Altitude Wind Array", category: "venus", maturity: "trending", cost: { money: 25, materials: 15, energy: 0, research: 6 }, effect: "+6 Energy/turn (Utilizes super-rotation winds)", type: "permanent", venusEffect: { energy: 6 } },
             { id: 65, name: "Acid-Resistant Skin Coating", category: "venus", maturity: "driving", cost: { money: 15, materials: 12, energy: 3, research: 4 }, effect: "Corrosion -1% per turn", type: "permanent", venusEffect: { corrosion: -1 } },
@@ -105,49 +105,49 @@
 const DIFFICULTY_LEVELS = {
   easy: {
     key: 'easy',
-    maxTurns: 24,
+    maxTurns: 25,
     corrosionRate: 1.5,
     initialHandSize: 4,
     handLimit: 8,
     drawPerTurn: 2,
     energyMaintenance: 4,
     guaranteedCards: [12],
-    resources: { money: 90, materials: 100, energy: 35, research: 10, morale: 80, integrity: 100 }
+    resources: { money: 95, materials: 105, energy: 35, research: 10, morale: 80, integrity: 100 }
   },
   medium: {
     key: 'medium',
-    maxTurns: 22,
+    maxTurns: 23,
     corrosionRate: 2,
     initialHandSize: 4,
     handLimit: 8,
     drawPerTurn: 2,
     energyMaintenance: 4,
     guaranteedCards: [12],
-    resources: { money: 65, materials: 75, energy: 25, research: 8, morale: 70, integrity: 100 }
+    resources: { money: 70, materials: 82, energy: 27, research: 8, morale: 70, integrity: 100 }
   },
   hard: {
     key: 'hard',
-    maxTurns: 19,
+    maxTurns: 20,
     corrosionRate: 2.5,
     initialHandSize: 3,
     handLimit: 8,
     drawPerTurn: 2,
     energyMaintenance: 5,
     guaranteedCards: [12],
-    resources: { money: 50, materials: 55, energy: 20, research: 7, morale: 60, integrity: 100 }
+    resources: { money: 55, materials: 62, energy: 22, research: 7, morale: 60, integrity: 100 }
   },
   // M3: sandbox defaults mirror medium exactly — a sandbox game with no custom
   // config (or an all-default one) plays identically to the medium baseline.
   sandbox: {
     key: 'sandbox',
-    maxTurns: 22,
+    maxTurns: 23,
     corrosionRate: 2,
     initialHandSize: 4,
     handLimit: 8,
     drawPerTurn: 2,
     energyMaintenance: 4,
     guaranteedCards: [12],
-    resources: { money: 65, materials: 75, energy: 25, research: 8, morale: 70, integrity: 100 }
+    resources: { money: 70, materials: 82, energy: 27, research: 8, morale: 70, integrity: 100 }
   }
 };
 
@@ -155,7 +155,7 @@ const DIFFICULTY_LEVELS = {
 // resourcePreset scales the medium starting resources (rounded): poor x0.75 / standard x1.0 / rich x1.5.
 // Note: initialHandSize def is 4 (= true medium base), not 3 as the spec table row stated — see plan "spec 偏差建议".
 const SANDBOX_LIMITS = {
-  maxTurns:          { min: 15, max: 30, step: 1,   def: 22 },
+  maxTurns:          { min: 15, max: 30, step: 1,   def: 23 },
   corrosionRate:     { min: 0,  max: 4,  step: 0.5, def: 2 },
   energyMaintenance: { min: 0,  max: 8,  step: 1,   def: 4 },
   drawPerTurn:       { min: 1,  max: 4,  step: 1,   def: 2 },
