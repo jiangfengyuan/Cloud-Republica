@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "deckRng": 0.3141592653,
+  "cases": [
+    {
+      "difficulty": "easy",
+      "seed": 1101,
+      "started": {
+        "eventId": 14,
+        "rngState": 2846546248,
+        "resources": { "money": 95, "materials": 105, "energy": 35, "research": 10, "morale": 80, "integrity": 100 },
+        "handIds": [12, 21, 66, 65],
+        "drawTail": [57, 18, 59, 60, 19, 62, 63, 20]
+      },
+      "actionResources": { "money": 100, "materials": 105, "energy": 35, "research": 10, "morale": 86, "integrity": 100 },
+      "settlement": {
+        "resources": { "money": 100, "materials": 105, "energy": 31, "research": 10, "morale": 85, "integrity": 98.5 },
+        "handIds": [12, 21, 66, 65, 20, 63]
+      },
+      "nextTurn": { "eventId": 3, "rngState": 615951367 }
+    },
+    {
+      "difficulty": "medium",
+      "seed": 2202,
+      "started": {
+        "eventId": 2,
+        "rngState": 384220977,
+        "resources": { "money": 70, "materials": 82, "energy": 27, "research": 8, "morale": 70, "integrity": 100 },
+        "handIds": [12, 21, 66, 65],
+        "drawTail": [57, 18, 59, 60, 19, 62, 63, 20]
+      },
+      "actionResources": { "money": 70, "materials": 82, "energy": 22, "research": 6, "morale": 70, "integrity": 100 },
+      "settlement": {
+        "resources": { "money": 70, "materials": 82, "energy": 18, "research": 6, "morale": 69, "integrity": 98 },
+        "handIds": [12, 21, 66, 65, 20, 63]
+      },
+      "nextTurn": { "eventId": 1, "rngState": 35466972 }
+    },
+    {
+      "difficulty": "hard",
+      "seed": 3303,
+      "started": {
+        "eventId": 11,
+        "rngState": 2216863002,
+        "resources": { "money": 55, "materials": 62, "energy": 22, "research": 7, "morale": 60, "integrity": 100 },
+        "handIds": [12, 21, 66],
+        "drawTail": [18, 59, 60, 19, 62, 63, 20, 65]
+      },
+      "actionResources": { "money": 40, "materials": 62, "energy": 22, "research": 7, "morale": 60, "integrity": 100 },
+      "settlement": {
+        "resources": { "money": 40, "materials": 62, "energy": 17, "research": 7, "morale": 59, "integrity": 97.5 },
+        "handIds": [12, 21, 66, 65, 20]
+      },
+      "nextTurn": { "eventId": 18, "rngState": 3749949873 }
+    }
+  ]
+}

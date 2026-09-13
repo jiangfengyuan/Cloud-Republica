@@ -1,0 +1,26 @@
+{
+  "name": "cloud-republic",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Cloud Republic refactor workspace",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/build-static.cjs",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run test:legacy && npm run test:unit",
+    "test:legacy": "node test/simulate.js && node test/architecture.js && node test/baseline/legacy-content.cjs && node test/baseline/legacy-seeds.cjs && node test/baseline/legacy-save.cjs",
+    "test:unit": "vitest run test/unit",
+    "test:e2e": "playwright test",
+    "check": "npm run typecheck && npm run test && npm run build"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.3.1",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.5",
+    "vitest": "^4.1.11"
+  },
+  "dependencies": {
+    "zod": "^4.1.5"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "v": 1,
+  "state": {
+    "difficulty": "medium",
+    "faction": "guild",
+    "turn": 1,
+    "maxTurns": 22,
+    "phase": "settlement",
+    "purification": 0,
+    "targetPurification": 100,
+    "habitats": 1,
+    "targetHabitats": 6,
+    "resources": { "money": 80, "materials": 75, "energy": 21, "research": 8, "morale": 59, "integrity": 94 },
+    "drawPile": [29, 61, 1, 39, 48, 2, 23, 26, 3, 32, 36, 4, 42, 45, 5, 51, 55, 58, 6, 64, 22, 7, 24, 25, 8, 27, 28, 9, 30, 31, 10, 33, 34, 35, 11, 37, 38, 40, 41, 13, 43, 44, 14, 46, 47, 15, 49, 50, 16, 52, 53, 54, 17, 56, 57, 18, 59, 60, 19, 62],
+    "discardPile": [],
+    "hand": [{ "id": 12, "uid": 1 }, { "id": 21, "uid": 2 }, { "id": 66, "uid": 3 }, { "id": 65, "uid": 4 }, { "id": 20, "uid": 5 }, { "id": 63, "uid": 6 }],
+    "permanentCards": [],
+    "selectedCards": [],
+    "techs": [],
+    "timedEffects": [],
+    "delayedEffects": [],
+    "maturedIncome": { "money": 0, "materials": 0, "energy": 0, "research": 0, "morale": 0 },
+    "pendingEvent": null,
+    "gameOver": false,
+    "rngState": 1725242831,
+    "nextCardUid": 7
+  },
+  "history": [
+    { "command": "start", "payload": { "difficulty": "medium", "faction": "guild", "seed": 20260912 } },
+    { "command": "acknowledgeEvent", "payload": {} },
+    { "command": "endTurn", "payload": {} }
+  ]
+}
